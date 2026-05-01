@@ -191,6 +191,11 @@
 	<string name="settings_clear_cache">Clear media cache</string>
 	<!-- Bislamic: app version footer in settings. -->
 	<string name="settings_app_version">deen.social for Android v%1$s (%2$d)</string>
+
+	<!-- Bislamic: crash reporting opt-out toggle in About settings. -->
+	<string name="bislamic_settings_crash_reporting">Send crash reports</string>
+	<string name="bislamic_settings_crash_reporting_subtitle">Anonymously report bugs to help us fix them</string>
+	<string name="bislamic_settings_crash_reporting_restart_required">Restart the app for the change to take effect</string>
 	<string name="media_cache_cleared">Media cache cleared</string>
 	<string name="confirm_log_out">Log out of %s?</string>
 	<string name="sensitive_content_explain">The author marked this media as sensitive.</string>

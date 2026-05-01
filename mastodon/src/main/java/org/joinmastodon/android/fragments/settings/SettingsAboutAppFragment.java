@@ -15,6 +15,8 @@ import org.joinmastodon.android.R;
 import org.joinmastodon.android.api.MastodonAPIController;
 import org.joinmastodon.android.api.session.AccountSession;
 import org.joinmastodon.android.api.session.AccountSessionManager;
+import org.joinmastodon.android.bislamic.BislamicCrashReporting;
+import org.joinmastodon.android.model.viewmodel.CheckableListItem;
 import org.joinmastodon.android.model.viewmodel.ListItem;
 import org.joinmastodon.android.ui.Snackbar;
 import org.joinmastodon.android.ui.utils.UiUtils;
@@ -30,6 +32,8 @@ import me.grishka.appkit.utils.V;
 
 public class SettingsAboutAppFragment extends BaseSettingsFragment<Void>{
 	private ListItem<Void> mediaCacheItem;
+	// Bislamic: opt-out toggle for crash reporting (Sentry).
+	private CheckableListItem<Void> crashReportingItem;
 
 	@Override
 	public void onCreate(Bundle savedInstanceState){
@@ -41,6 +45,14 @@ public class SettingsAboutAppFragment extends BaseSettingsFragment<Void>{
 				new ListItem<>(R.string.settings_contribute, 0, i->UiUtils.launchWebBrowser(getActivity(), getString(R.string.github_url))),
 				new ListItem<>(R.string.settings_tos, 0, i->UiUtils.launchWebBrowser(getActivity(), "https://"+s.domain+"/terms")),
 				new ListItem<>(R.string.settings_privacy_policy, 0, i->UiUtils.launchWebBrowser(getActivity(), getString(R.string.privacy_policy_url)), 0, true),
+				// Bislamic: opt-out toggle for Sentry crash reporting. Sits next to
+				// the privacy policy because it's a privacy/data-collection control.
+				crashReportingItem=new CheckableListItem<>(
+						R.string.bislamic_settings_crash_reporting,
+						R.string.bislamic_settings_crash_reporting_subtitle,
+						CheckableListItem.Style.SWITCH,
+						BislamicCrashReporting.isEnabled(getActivity()),
+						this::onCrashReportingToggle),
 				mediaCacheItem=new ListItem<>(R.string.settings_clear_cache, 0, this::onClearMediaCacheClick)
 		));
 
@@ -84,6 +96,20 @@ public class SettingsAboutAppFragment extends BaseSettingsFragment<Void>{
 				updateMediaCacheItem();
 			});
 		});
+	}
+
+	// Bislamic: handler for the Sentry opt-out switch. Persists the change
+	// immediately; a Toast reminds the user the new state takes effect on
+	// the next app launch (Sentry-Android does not support deinit at runtime).
+	private void onCrashReportingToggle(ListItem<?> item){
+		if(item instanceof CheckableListItem<?> checkable){
+			checkable.toggle();
+			BislamicCrashReporting.setEnabled(getActivity(), checkable.checked);
+			Toast.makeText(getActivity(),
+					R.string.bislamic_settings_crash_reporting_restart_required,
+					Toast.LENGTH_SHORT).show();
+		}
+		rebindItem(item);
 	}
 
 	private void updateMediaCacheItem(){
