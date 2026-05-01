@@ -1,0 +1,175 @@
+name: Upstream Sync Watcher
+
+# Watches mastodon/mastodon-android for new releases and opens PRs to bring
+# them into Bislamic/deen.social-android. Runs daily; can also be triggered
+# manually with a specific tag if needed.
+
+on:
+  schedule:
+    - cron: '0 6 * * *'   # Daily at 06:00 UTC
+  workflow_dispatch:
+    inputs:
+      target_ref:
+        description: 'Specific upstream tag to sync (leave blank for latest)'
+        required: false
+        type: string
+
+permissions:
+  contents: write
+  pull-requests: write
+  issues: write
+
+env:
+  UPSTREAM_REPO: mastodon/mastodon-android
+  OUR_BRANCH: master
+
+jobs:
+  watch-and-sync:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ env.OUR_BRANCH }}
+          fetch-depth: 0
+
+      - name: Configure git identity
+        run: |
+          git config user.name  "deen.social sync bot"
+          git config user.email "noreply@deen.social"
+
+      - name: Add upstream remote and fetch
+        run: |
+          git remote add upstream "https://github.com/${UPSTREAM_REPO}.git" || true
+          git fetch upstream --tags --quiet
+
+      - name: Determine target ref
+        id: target
+        run: |
+          if [ -n "${{ inputs.target_ref }}" ]; then
+            TARGET="${{ inputs.target_ref }}"
+          else
+            TARGET=$(git for-each-ref --sort=-creatordate \
+              --format='%(refname:short)' 'refs/tags/*' | head -1)
+          fi
+          echo "ref=$TARGET" >> "$GITHUB_OUTPUT"
+          echo "::notice::Target = $TARGET"
+
+      - name: Check if sync is needed
+        id: check
+        run: |
+          TARGET="${{ steps.target.outputs.ref }}"
+          if [ -z "$TARGET" ]; then
+            echo "needs_sync=false" >> "$GITHUB_OUTPUT"
+            echo "::notice::No upstream tags found; nothing to do."
+            exit 0
+          fi
+          if git merge-base --is-ancestor "$TARGET" "$OUR_BRANCH" 2>/dev/null; then
+            echo "needs_sync=false" >> "$GITHUB_OUTPUT"
+            echo "::notice::Already at or past $TARGET."
+          else
+            echo "needs_sync=true"  >> "$GITHUB_OUTPUT"
+            echo "::notice::New upstream content available: $TARGET"
+          fi
+
+      - name: Detect change types from commit messages
+        if: steps.check.outputs.needs_sync == 'true'
+        id: detect
+        run: |
+          TARGET="${{ steps.target.outputs.ref }}"
+          COMMITS=$(git log --format='%s%n%b' "$OUR_BRANCH..$TARGET" 2>/dev/null || echo "")
+          LABELS="upstream-sync"
+          if echo "$COMMITS" | grep -iqE 'CVE-[0-9]{4}-[0-9]+|security[-: ]?(fix|patch|advisory)|vulnerab|XSS|CSRF|injection'; then
+            LABELS="$LABELS,security"
+          fi
+          if echo "$COMMITS" | grep -iqE '^feat[(:]|^add[(:]|new feature|implement'; then
+            LABELS="$LABELS,feature"
+          fi
+          if echo "$COMMITS" | grep -iqE '^fix[(:]|bug ?fix|^bugfix'; then
+            LABELS="$LABELS,bugfix"
+          fi
+          echo "labels=$LABELS" >> "$GITHUB_OUTPUT"
+          echo "::notice::Labels = $LABELS"
+
+      - name: Create sync branch and attempt merge
+        if: steps.check.outputs.needs_sync == 'true'
+        id: merge
+        run: |
+          TARGET="${{ steps.target.outputs.ref }}"
+          BRANCH="sync/upstream-${TARGET}"
+          git checkout -B "$BRANCH" "$OUR_BRANCH"
+          if git merge --no-ff --no-edit "$TARGET" -m "sync: merge upstream $TARGET"; then
+            echo "status=clean" >> "$GITHUB_OUTPUT"
+          else
+            git add -A
+            git commit -m "CONFLICTS: needs human resolution merging $TARGET" --allow-empty
+            echo "status=conflict" >> "$GITHUB_OUTPUT"
+          fi
+          git push origin "$BRANCH" --force-with-lease
+          echo "branch=$BRANCH" >> "$GITHUB_OUTPUT"
+
+      - name: Open or update sync PR
+        if: steps.check.outputs.needs_sync == 'true'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          TARGET="${{ steps.target.outputs.ref }}"
+          BRANCH="${{ steps.merge.outputs.branch }}"
+          STATUS="${{ steps.merge.outputs.status }}"
+          LABELS="${{ steps.detect.outputs.labels }}"
+
+          if [ "$STATUS" = "conflict" ]; then
+            LABELS="$LABELS,needs-resolution"
+            STATUS_LINE="**Conflicts detected — manual resolution required.**"
+          else
+            STATUS_LINE="**Clean merge.** CI should pass; smoke test before merging."
+          fi
+
+          STATS=$(git diff --shortstat "$OUR_BRANCH..$TARGET" 2>/dev/null || echo "n/a")
+
+          BODY=$(printf '%s\n' \
+            "Automated sync from \`${UPSTREAM_REPO}@${TARGET}\`." \
+            "" \
+            "${STATUS_LINE}" \
+            "" \
+            "## Diff stats" \
+            "\`\`\`" \
+            "${STATS}" \
+            "\`\`\`" \
+            "" \
+            "## Review checklist" \
+            "- [ ] Our patches still apply (default-instance, branding, removed pickers)" \
+            "- [ ] No new hardcoded references to mastodon.social or joinmastodon.org" \
+            "- [ ] Build succeeds on CI" \
+            "- [ ] Manual smoke test on real device or emulator" \
+            "- [ ] Release notes updated" \
+            "" \
+            "---" \
+            "_Generated by .github/workflows/upstream-sync.yml_")
+
+          if ! gh pr create \
+              --base "$OUR_BRANCH" \
+              --head "$BRANCH" \
+              --title "[sync] Upstream ${TARGET}" \
+              --body "$BODY" 2>/dev/null; then
+            gh pr edit "$BRANCH" --body "$BODY"
+          fi
+
+          IFS=',' read -ra LBL <<< "$LABELS"
+          for L in "${LBL[@]}"; do
+            gh label create "$L" --color "ededed" 2>/dev/null || true
+          done
+          gh pr edit "$BRANCH" --add-label "$LABELS"
+
+      - name: Job summary
+        if: always()
+        run: |
+          {
+            echo "### Upstream Sync Result"
+            echo "- Target ref: \`${{ steps.target.outputs.ref }}\`"
+            echo "- Sync needed: \`${{ steps.check.outputs.needs_sync }}\`"
+            if [ "${{ steps.check.outputs.needs_sync }}" = "true" ]; then
+              echo "- Merge status: \`${{ steps.merge.outputs.status }}\`"
+              echo "- Sync branch: \`${{ steps.merge.outputs.branch }}\`"
+            fi
+          } >> "$GITHUB_STEP_SUMMARY"
