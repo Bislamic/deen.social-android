@@ -47,7 +47,9 @@ import me.grishka.appkit.views.BottomSheet;
 
 public class SplashFragment extends AppKitFragment{
 
-	private static final String DEFAULT_SERVER="mastodon.social";
+	// Bislamic: hardcoded to deen.social. The upstream catalog rotation
+	// (loadAndChooseDefaultServer) is bypassed; see onCreateView and onButtonClick.
+	private static final String DEFAULT_SERVER="deen.social";
 
 	private SizeListenerFrameLayout contentView;
 	private View artContainer, blueFill, greenFill;
@@ -113,18 +115,23 @@ public class SplashFragment extends AppKitFragment{
 				});
 			}
 		});
-		if(!loadedDefaultServer && !loadingDefaultServer)
-			loadAndChooseDefaultServer();
+		// Bislamic: instance is fixed to deen.social, no need to query the
+		// upstream catalog API. loadAndChooseDefaultServer() is left in-place
+		// as dead code to minimize merge conflicts on upstream syncs.
+		loadedDefaultServer=true;
 
 		return contentView;
 	}
 
 	private void onButtonClick(View v){
-		Bundle extras=new Bundle();
+		// Bislamic: instance picker is removed. Both buttons route directly
+		// to the deen.social signup or login flow.
 		boolean isSignup=v.getId()==R.id.btn_get_started;
-		extras.putBoolean("signup", isSignup);
-		extras.putString("defaultServer", chosenDefaultServer);
-		Nav.go(getActivity(), isSignup ? InstanceCatalogSignupFragment.class : InstanceChooserLoginFragment.class, extras);
+		if(isSignup){
+			proceedWithServerDomain(DEFAULT_SERVER);
+		}else{
+			proceedWithLogin(DEFAULT_SERVER);
+		}
 	}
 
 	private void onJoinDefaultServerClick(View v){
@@ -207,6 +214,32 @@ public class SplashFragment extends AppKitFragment{
 						error.showToast(getActivity());
 					}
 				});
+	}
+
+	// Bislamic: load deen.social instance info and start the OAuth login flow,
+	// bypassing the upstream InstanceChooserLoginFragment (server picker).
+	private void proceedWithLogin(String domain){
+		instanceLoadingProgress=new ProgressDialog(getActivity());
+		instanceLoadingProgress.setCancelable(false);
+		instanceLoadingProgress.setMessage(getString(R.string.loading_instance));
+		instanceLoadingProgress.show();
+		AccountSessionManager.loadInstanceInfo(domain, new Callback<>(){
+			@Override
+			public void onSuccess(Instance result){
+				if(getActivity()==null) return;
+				if(instanceLoadingProgress!=null) instanceLoadingProgress.dismiss();
+				instanceLoadingProgress=null;
+				AccountSessionManager.getInstance().authenticate(getActivity(), result);
+			}
+
+			@Override
+			public void onError(ErrorResponse error){
+				if(getActivity()==null) return;
+				if(instanceLoadingProgress!=null) instanceLoadingProgress.dismiss();
+				instanceLoadingProgress=null;
+				error.showToast(getActivity());
+			}
+		});
 	}
 
 	private void onLearnMoreClick(View v){
