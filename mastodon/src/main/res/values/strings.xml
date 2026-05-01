@@ -189,7 +189,8 @@
 	<string name="settings_tos">Terms of service</string>
 	<string name="settings_privacy_policy">Privacy policy</string>
 	<string name="settings_clear_cache">Clear media cache</string>
-	<string name="settings_app_version">Mastodon for Android v%1$s (%2$d)</string>
+	<!-- Bislamic: app version footer in settings. -->
+	<string name="settings_app_version">deen.social for Android v%1$s (%2$d)</string>
 	<string name="media_cache_cleared">Media cache cleared</string>
 	<string name="confirm_log_out">Log out of %s?</string>
 	<string name="sensitive_content_explain">The author marked this media as sensitive.</string>
@@ -346,10 +347,19 @@
 	<string name="pick_server">Pick another server</string>
 	<string name="signup_or_login">or</string>
 	<string name="learn_more">Learn more</string>
-	<string name="welcome_to_mastodon">Welcome to Mastodon</string>
-	<string name="welcome_paragraph1">Mastodon is a decentralized social network, meaning no single company controls it. It’s made up of many independently-run servers, all connected together.</string>
+	<!-- Bislamic: welcome screen heading rebranded for the deen.social
+	     single-instance experience. -->
+	<string name="welcome_to_mastodon">Welcome to deen.social</string>
+	<!-- Bislamic: rewritten for the deen.social single-instance experience.
+	     Upstream's text describes the wider Mastodon network and server choice;
+	     for deen.social users that framing is misleading because the picker is
+	     bypassed and the instance is fixed. -->
+	<string name="welcome_paragraph1">deen.social is a community space for Muslims, built on the open Mastodon protocol. You can follow, share, and connect — without ads, without algorithms, without surveillance.</string>
 	<string name="what_are_servers">What are servers?</string>
-	<string name="welcome_paragraph2">Every Mastodon account is hosted on a server — each with its own values, rules, &amp; admins. No matter which one you pick, you can follow and interact with people on any server.</string>
+	<!-- Bislamic: rewritten. Original described picking a server; deen.social
+	     is the only registration target. Federation across the Fediverse is
+	     preserved (you can still follow and interact with anyone, anywhere). -->
+	<string name="welcome_paragraph2">Your account lives on deen.social, a Muslim community instance. Through Mastodon\'s federation, you can still follow and interact with people on any other server in the Fediverse.</string>
 	<string name="opening_link">Opening link…</string>
 	<string name="link_not_supported">This link is not supported in the app</string>
 	<string name="log_out_all_accounts">Log out of all accounts</string>
