@@ -86,6 +86,7 @@
 
 		<item name="android:textColor">?colorM3OnSurface</item>
 		<item name="emptyStateElephantArt">@drawable/empty_state_elephant_light</item>
+		<item name="colorBrand">#5638CC</item>
 	</style>
 
 	<style name="Theme.Mastodon.Dark" parent="Theme.AppKit">
@@ -174,6 +175,7 @@
 
 		<item name="android:textColor">?colorM3OnSurface</item>
 		<item name="emptyStateElephantArt">@drawable/empty_state_elephant_dark</item>
+		<item name="colorBrand">#5638CC</item>
 	</style>
 
 	<style name="Theme.Mastodon.Light.MediumContrast">

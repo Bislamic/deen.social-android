@@ -28,7 +28,9 @@ public enum NotificationType{
 	@SerializedName("quote")
 	QUOTE,
 	@SerializedName("quoted_update")
-	QUOTED_UPDATE;
+	QUOTED_UPDATE,
+	FALLBACK,
+	;
 
 	public boolean canBeGrouped(){
 		return this==REBLOG || this==FAVORITE || this==FOLLOW;
@@ -36,5 +38,11 @@ public enum NotificationType{
 
 	public static EnumSet<NotificationType> getGroupableTypes(){
 		return EnumSet.of(FAVORITE, REBLOG, FOLLOW);
+	}
+
+	public static EnumSet<NotificationType> getAllTypes(){
+		EnumSet<NotificationType> types=EnumSet.allOf(NotificationType.class);
+		types.remove(FALLBACK);
+		return types;
 	}
 }

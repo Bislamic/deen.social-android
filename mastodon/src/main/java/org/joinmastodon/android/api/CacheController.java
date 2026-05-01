@@ -228,7 +228,7 @@ public class CacheController{
 				if(!onlyMentions)
 					loadingNotifications=true;
 				if(AccountSessionManager.get(accountID).getInstanceInfo().getApiVersion()>=2){
-					new GetNotificationsV2(maxID, count, onlyMentions ? EnumSet.of(NotificationType.MENTION): EnumSet.allOf(NotificationType.class), NotificationType.getGroupableTypes())
+					new GetNotificationsV2(maxID, count, onlyMentions ? EnumSet.of(NotificationType.MENTION) : null, NotificationType.getGroupableTypes())
 							.setCallback(new Callback<>(){
 								@Override
 								public void onSuccess(GetNotificationsV2.GroupedNotificationsResults result){
