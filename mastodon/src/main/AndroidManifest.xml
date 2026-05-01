@@ -53,6 +53,25 @@
 				<action android:name="android.intent.action.MAIN"/>
 				<category android:name="android.intent.category.LAUNCHER"/>
 			</intent-filter>
+			<!-- Bislamic: deep links for the deen.social instance and the
+			     islamic.social landing/redirect page. autoVerify requires a
+			     Digital Asset Links file at https://deen.social/.well-known/assetlinks.json
+			     and the equivalent on islamic.social to bind the app as the
+			     default handler. Without those files, Android still offers
+			     the app as a manual choice. -->
+			<intent-filter android:autoVerify="true">
+				<action android:name="android.intent.action.VIEW"/>
+				<category android:name="android.intent.category.BROWSABLE"/>
+				<category android:name="android.intent.category.DEFAULT"/>
+				<data android:scheme="https" android:host="deen.social" android:pathPrefix="/@"/>
+			</intent-filter>
+			<intent-filter android:autoVerify="true">
+				<action android:name="android.intent.action.VIEW"/>
+				<category android:name="android.intent.category.BROWSABLE"/>
+				<category android:name="android.intent.category.DEFAULT"/>
+				<data android:scheme="https" android:host="islamic.social" android:pathPrefix="/@"/>
+			</intent-filter>
+			<!-- Upstream Mastodon deep links retained per option B (cross-instance friendliness). -->
 			<intent-filter android:autoVerify="true">
 				<action android:name="android.intent.action.VIEW"/>
 				<category android:name="android.intent.category.BROWSABLE"/>
