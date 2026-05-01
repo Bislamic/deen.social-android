@@ -121,6 +121,19 @@ dependencies {
 	appcenterPublicBetaImplementation "com.microsoft.appcenter:appcenter-crashes:${appCenterSdkVersion}"
 	appcenterPublicBetaImplementation "com.microsoft.appcenter:appcenter-distribute:${appCenterSdkVersion}"
 
+	// Bislamic: Sentry crash reporting. Active in all build types but only
+	// initialised at runtime when a DSN is configured (see BislamicCrashReporting).
+	// Microsoft's AppCenter (above) is deprecated and only used by upstream's
+	// own beta flavors; Sentry is our modern replacement for debug/release.
+	//
+	// Transitive exclusion of androidx.collection: Mastodon uses the
+	// me.grishka.litex:collection fork which provides the same symbols as
+	// stock androidx.collection. Without the exclude, Gradle errors with
+	// 'Duplicate class androidx.collection.*'.
+	implementation('io.sentry:sentry-android:7.18.0') {
+		exclude group: 'androidx.collection'
+	}
+
 	androidTestImplementation 'androidx.test:core:1.5.0'
 	androidTestImplementation 'androidx.test.ext:junit:1.1.5'
 	androidTestImplementation 'androidx.test:runner:1.5.2'

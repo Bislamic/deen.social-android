@@ -7,6 +7,7 @@ import android.content.res.Configuration;
 import android.webkit.WebView;
 
 import org.joinmastodon.android.api.PushSubscriptionManager;
+import org.joinmastodon.android.bislamic.BislamicCrashReporting;
 import org.joinmastodon.android.ui.utils.UiUtils;
 
 import me.grishka.appkit.imageloader.ImageCache;
@@ -21,6 +22,11 @@ public class MastodonApp extends Application{
 	@Override
 	public void onCreate(){
 		super.onCreate();
+		// Bislamic: initialise crash reporting as early as possible so
+		// failures elsewhere in onCreate (image cache, push setup, etc.)
+		// are still captured. The wrapper is a no-op if the user has opted
+		// out or if no Sentry DSN has been configured yet.
+		BislamicCrashReporting.initialize(this);
 		context=getApplicationContext();
 		V.setApplicationContext(context);
 		ImageCache.Parameters params=new ImageCache.Parameters();
