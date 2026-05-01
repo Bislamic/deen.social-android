@@ -21,9 +21,15 @@ import java.util.Objects;
 import me.grishka.appkit.Nav;
 
 public class DonationWebViewFragment extends WebViewFragment{
-	public static final String SUCCESS_URL="https://sponsor.joinmastodon.org/donate/success";
-	public static final String FAILURE_URL="https://sponsor.joinmastodon.org/donate/failure";
-	public static final String CANCEL_URL="https://sponsor.joinmastodon.org/donate/cancel";
+	// Bislamic: donations route through https://islamic.social/donate.
+	// The success/failure/cancel callback URLs must be implemented on
+	// islamic.social as redirect targets after the chosen payment provider
+	// completes (Stripe Checkout, PayPal, etc.). Until those exist, the
+	// WebView will not auto-detect completion and the user must close
+	// it manually with the back button.
+	public static final String SUCCESS_URL="https://islamic.social/donate/success";
+	public static final String FAILURE_URL="https://islamic.social/donate/failure";
+	public static final String CANCEL_URL="https://islamic.social/donate/cancel";
 
 	@Override
 	public void onCreate(Bundle savedInstanceState){

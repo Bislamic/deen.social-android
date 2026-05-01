@@ -369,7 +369,10 @@ public class AccountSession{
 	}
 
 	public boolean isEligibleForDonations(){
-		return ("mastodon.social".equalsIgnoreCase(domain) || "mastodon.online".equalsIgnoreCase(domain)) && self.createdAt.isBefore(Instant.now().minus(MIN_DAYS_ACCOUNT_AGE_FOR_DONATIONS, ChronoUnit.DAYS));
+		// Bislamic: donation prompts are routed to https://islamic.social/donate.
+		// Eligibility is now based on the deen.social instance instead of
+		// upstream's mastodon.social/mastodon.online check.
+		return "deen.social".equalsIgnoreCase(domain) && self.createdAt.isBefore(Instant.now().minus(MIN_DAYS_ACCOUNT_AGE_FOR_DONATIONS, ChronoUnit.DAYS));
 	}
 
 	public int getDonationSeed(){

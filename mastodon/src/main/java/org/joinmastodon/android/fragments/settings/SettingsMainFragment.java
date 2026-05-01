@@ -163,7 +163,10 @@ public class SettingsMainFragment extends BaseSettingsFragment<Object>{
 	}
 
 	private void onManageDonationClick(ListItem<?> item){
-		UiUtils.launchWebBrowser(getActivity(), useStagingEnvironmentForDonations() ? "https://sponsor.staging.joinmastodon.org/donate/manage" : "https://sponsor.joinmastodon.org/donate/manage");
+		// Bislamic: route to islamic.social/donate/manage instead of Mastodon GmbH's
+		// sponsor portal. The staging environment toggle is preserved but unused
+		// unless a staging.islamic.social mirror is configured.
+		UiUtils.launchWebBrowser(getActivity(), useStagingEnvironmentForDonations() ? "https://staging.islamic.social/donate/manage" : "https://islamic.social/donate/manage");
 	}
 
 	@Subscribe
