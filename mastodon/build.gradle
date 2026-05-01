@@ -10,7 +10,11 @@ android {
 
 	compileSdk 36
 	defaultConfig {
-		applicationId "org.joinmastodon.android"
+		// Bislamic: applicationId is the public Google Play / on-device identity.
+		// The Java namespace (org.joinmastodon.android, below) is intentionally
+		// left untouched to keep the ~1000 source files identical to upstream
+		// and let upstream syncs apply cleanly.
+		applicationId "social.deen.android"
 		minSdk 23
 		targetSdk 35
 		versionCode 174
