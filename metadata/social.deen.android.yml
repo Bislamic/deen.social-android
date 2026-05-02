@@ -1,0 +1,61 @@
+Categories:
+  - Internet
+  - Connectivity
+
+License: GPL-3.0-only
+
+AuthorName: Bislamic
+AuthorWebSite: https://islamic.social
+WebSite: https://islamic.social
+SourceCode: https://github.com/Bislamic/deen.social-android
+IssueTracker: https://github.com/Bislamic/deen.social-android/issues
+Translation: https://github.com/Bislamic/deen.social-android
+
+AutoName: deen.social
+Summary: Muslim community Mastodon client for deen.social
+
+Description: |
+  deen.social is a community space for Muslims, built on the open Mastodon
+  protocol. This is the official Android client for the deen.social
+  instance: a single-instance experience that connects you to the wider
+  Fediverse without algorithms, without ads, and without surveillance.
+
+  Features (inherited from upstream Mastodon for Android):
+
+  * Post text, images, and polls.
+  * Follow people on deen.social and across the Fediverse.
+  * Federated and home timelines.
+  * Direct messages, lists, and bookmarks.
+  * Media auto-translation when supported by the server.
+  * Push notifications for mentions, follows, boosts, and replies.
+  * Material 3 UI with light/dark themes.
+
+  This is a downstream fork of the official Mastodon Android client,
+  rebranded for the deen.social Muslim community. The instance picker
+  is bypassed: signing up and logging in go directly to deen.social.
+  Federation across the Fediverse is preserved — you can still follow
+  and interact with people on any other Mastodon-compatible server.
+
+  Privacy:
+  Crash reports are sent to a self-hosted Sentry instance to help fix
+  bugs. They contain stack traces and device model only — no IP
+  addresses, no user-identifiable data. You can disable this in
+  Settings → About → "Send crash reports".
+
+RepoType: git
+Repo: https://github.com/Bislamic/deen.social-android.git
+
+Builds:
+  - versionName: '2.12.0'
+    versionCode: 174
+    commit: master
+    subdir: mastodon
+    gradle:
+      - yes
+
+# Auto-update settings: the F-Droid bot will scan for new git tags
+# matching this pattern and try to build them automatically.
+AutoUpdateMode: Version
+UpdateCheckMode: Tags
+CurrentVersion: '2.12.0'
+CurrentVersionCode: 174

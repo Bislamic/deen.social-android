@@ -1,0 +1,26 @@
+deen.social is a community space for Muslims, built on the open Mastodon protocol.
+
+This is the official Android client for the deen.social instance: a single-instance experience that connects you to the wider Fediverse without algorithms, without ads, and without surveillance.
+
+WHAT YOU GET
+
+• Post text, images, and polls
+• Follow people on deen.social and across the entire Fediverse
+• Federated and home timelines
+• Direct messages, lists, and bookmarks
+• Push notifications for mentions, follows, boosts, and replies
+• Material 3 UI with light/dark themes
+• Built-in translation (when your server supports it)
+
+WHY DEEN.SOCIAL
+
+deen.social is run for and by the Muslim community. The app skips the instance picker that the standard Mastodon client shows on launch — your account lives on deen.social, and you connect outward from there.
+
+PRIVACY
+
+• No advertising
+• No behavioural analytics
+• Crash reports (stack traces only, no personal data) can be disabled in Settings
+• Open source under GPL-3.0 — see github.com/Bislamic/deen.social-android
+
+This app is not affiliated with Mastodon GmbH. "Mastodon" is a trademark of Mastodon GmbH.
