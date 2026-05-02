@@ -50,6 +50,19 @@ jobs:
       - name: Make gradlew executable
         run: chmod +x ./gradlew
 
+      - name: Generate local.properties
+        # The secrets-gradle-plugin used by upstream requires that
+        # local.properties exists (even with no secret values) for the
+        # configuration phase to succeed. We point sdk.dir at the
+        # runner's preinstalled SDK and leave secret keys blank — debug
+        # builds do not need them.
+        run: |
+          cat > local.properties <<EOF
+          sdk.dir=${ANDROID_HOME}
+          EOF
+          echo "local.properties contents:"
+          cat local.properties
+
       - name: Assemble debug APK
         run: ./gradlew :mastodon:assembleDebug --console=plain --no-daemon
 

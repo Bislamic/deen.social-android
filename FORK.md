@@ -72,4 +72,50 @@ PRs are welcome for deen.social-specific improvements. For changes that would be
 
 ## Build & release
 
-(To be documented after first deen-customized build is green. Will mirror the structure of upstream's `build_and_deploy.yml` with our own signing keys and Play Console credentials.)
+### Debug builds (today)
+
+Every push to `master` and every PR triggers
+`.github/workflows/build-debug-apk.yml` which:
+
+1. Builds `:mastodon:assembleDebug` on JDK 21 (Temurin) on `ubuntu-24.04`.
+2. Asserts via `aapt2 dump badging` that the APK declares
+   `package=social.deen.android` and `label='deen.social'` — if the
+   Bislamic identity patches were ever lost in a future upstream-sync
+   merge, the workflow fails before the merge can land.
+3. Uploads the resulting APK as a 30-day GitHub Actions artifact
+   named `deen-social-android-debug-<sha>`.
+
+Testers can grab the latest build by opening the latest run in the
+Actions tab and downloading the artifact. No Google Play account
+required.
+
+Locally, the same build runs as:
+
+```bash
+./gradlew :mastodon:assembleDebug
+adb install -r mastodon/build/outputs/apk/debug/mastodon-debug.apk
+```
+
+See [`BUILDING.md`](BUILDING.md) for full local-setup instructions and
+common errors.
+
+### Release builds
+
+Will mirror the structure of upstream's `build_and_deploy.yml` with
+Bislamic's own signing keys and Google Play Console credentials. To be
+documented once the Bislamic Play Console account is enrolled.
+
+## Crash reporting
+
+Crashes and unhandled exceptions are reported to the Bislamic Sentry
+organisation, project `deen-social-android` (EU region, Frankfurt).
+
+- Issues UI: https://bislamic.sentry.io/issues/?project=4511317452062800
+- Default ON, opt-out via Settings → About → "Send crash reports".
+- Implementation: `mastodon/src/main/java/.../bislamic/BislamicCrashReporting.java`
+  initialises the SDK from `MastodonApp.onCreate()`. Privacy posture is
+  `sendDefaultPii=false`; only stack traces and breadcrumbs are sent.
+
+The DSN embedded in source is safe to publish — it permits event
+submission only, not event reads. This is standard practice for every
+Sentry-instrumented mobile client.
