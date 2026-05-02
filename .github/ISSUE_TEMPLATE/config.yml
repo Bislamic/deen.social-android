@@ -1,0 +1,20 @@
+blank_issues_enabled: true
+contact_links:
+  - name: Bug or feature in the core Mastodon Android client
+    url: https://github.com/mastodon/mastodon-android/issues
+    about: |
+      Almost all of the code in this repo (timelines, notifications, the
+      composer, OAuth, the network stack, etc.) comes from upstream
+      mastodon/mastodon-android. Please report core-Mastodon bugs there
+      so the entire ecosystem benefits. Our daily auto-sync workflow
+      will pull the fix into this fork once it ships upstream.
+  - name: Server / federation / moderation question for deen.social
+    url: https://deen.social/about
+    about: |
+      Issues with what your account can do, who can see what, posts
+      being delivered, etc., are server-side concerns and not in this
+      app's scope. Contact the deen.social moderators on the about
+      page or via the platform itself.
+  - name: General help with the Fediverse
+    url: https://fediverse.party/
+    about: A community-maintained directory of Fediverse documentation.
