@@ -32,10 +32,15 @@ public final class BislamicCrashReporting {
     private static final String PREFS_NAME = "bislamic_crash_reporting";
     private static final String KEY_ENABLED = "enabled";
 
-    /** TODO: paste the deen.social production Sentry DSN here. */
-    private static final String DSN_PROD = "";
+    /**
+     * Bislamic deen-social-android Sentry project (EU region, Frankfurt).
+     * DSN is safe to embed: it permits event submission only, not event reads.
+     * Manage events: https://bislamic.sentry.io/issues/?project=4511317452062800
+     */
+    private static final String DSN_PROD =
+        "https://1812b152ffa402d07cf77c5529eeb922@o4511247969943552.ingest.de.sentry.io/4511317452062800";
 
-    /** TODO: paste a separate Sentry DSN for debug builds (or leave blank to share PROD). */
+    /** Empty = debug builds share the production DSN, tagged via environment="debug". */
     private static final String DSN_DEBUG = "";
 
     private static boolean initialised = false;
