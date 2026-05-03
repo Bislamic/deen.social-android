@@ -1,8 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-	<!-- Bislamic: legacy primary_700 token (4 references in code) rebranded
-	     to deep Cielo so older Mastodon UI surfaces match the M3 primary. -->
-	<color name="primary_700">#1B5BB0</color>
+	<color name="primary_700">#431cbb</color>
 
 	<color name="navigation_bar_bg_light">#282C37</color>
 	<color name="highlight_over_dark">#30FFFFFF</color>

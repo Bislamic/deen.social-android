@@ -1,18 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 	<!-- light -->
-	<!-- Bislamic: Cielo brand palette. Replaces upstream Mastodon purple-blurple
-	     (#4000DD) and lavender secondary with deen.social sky-blue range.
-	     onPrimary / onPrimaryContainer kept as upstream — both still pass WCAG
-	     contrast against the new Cielo primaries. -->
-	<color name="masterialLight_primary">#2A7FE0</color>
+	<color name="masterialLight_primary">#4000DD</color>
 	<color name="masterialLight_onPrimary">#FFFFFF</color>
-	<color name="masterialLight_primaryContainer">#DCEAFB</color>
-	<color name="masterialLight_onPrimaryContainer">#0A1929</color>
-	<color name="masterialLight_secondary">#1B5BB0</color>
+	<color name="masterialLight_primaryContainer">#EBDDFF</color>
+	<color name="masterialLight_onPrimaryContainer">#230F46</color>
+	<color name="masterialLight_secondary">#5D51AF</color>
 	<color name="masterialLight_onSecondary">#FFFFFF</color>
-	<color name="masterialLight_secondaryContainer">#B8D6F7</color>
-	<color name="masterialLight_onSecondaryContainer">#0A1929</color>
+	<color name="masterialLight_secondaryContainer">#B0A5FF</color>
+	<color name="masterialLight_onSecondaryContainer">#220C73</color>
 	<color name="masterialLight_tertiary">#810082</color>
 	<color name="masterialLight_onTertiary">#FFFFFF</color>
 	<color name="masterialLight_tertiaryContainer">#B722B7</color>
@@ -172,17 +168,14 @@
 	<color name="masterialLight_colorOnLimeContainer_highContrast">#FFFFFF</color>
 
 	<!-- dark -->
-	<!-- Bislamic: Cielo brand palette in dark mode. Lifts brightness so the
-	     blue still reads as a brand surface against carbon backgrounds.
-	     onPrimary becomes navy so white text on the lighter Cielo isn't muddy. -->
-	<color name="masterialDark_primary">#7FB8F2</color>
-	<color name="masterialDark_onPrimary">#102E5C</color>
-	<color name="masterialDark_primaryContainer">#1B5BB0</color>
-	<color name="masterialDark_onPrimaryContainer">#DCEAFB</color>
-	<color name="masterialDark_secondary">#A6CCF5</color>
-	<color name="masterialDark_onSecondary">#0A1929</color>
-	<color name="masterialDark_secondaryContainer">#16294A</color>
-	<color name="masterialDark_onSecondaryContainer">#DCEAFB</color>
+	<color name="masterialDark_primary">#C7BFFF</color>
+	<color name="masterialDark_onPrimary">#2B009E</color>
+	<color name="masterialDark_primaryContainer">#4D1AF4</color>
+	<color name="masterialDark_onPrimaryContainer">#FAF5FF</color>
+	<color name="masterialDark_secondary">#C7BFFF</color>
+	<color name="masterialDark_onSecondary">#2E1E7E</color>
+	<color name="masterialDark_secondaryContainer">#3D308E</color>
+	<color name="masterialDark_onSecondaryContainer">#D6CFFF</color>
 	<color name="masterialDark_tertiary">#FFAAF5</color>
 	<color name="masterialDark_onTertiary">#5B005C</color>
 	<color name="masterialDark_tertiaryContainer">#970099</color>
