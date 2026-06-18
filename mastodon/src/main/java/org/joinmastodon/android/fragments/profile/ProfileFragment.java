@@ -6,7 +6,6 @@ import android.animation.AnimatorSet;
 import android.animation.ObjectAnimator;
 import android.annotation.SuppressLint;
 import android.app.Activity;
-import android.app.AlertDialog;
 import android.app.Fragment;
 import android.app.assist.AssistContent;
 import android.content.ClipData;
@@ -23,11 +22,9 @@ import android.graphics.drawable.LayerDrawable;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
-import android.text.SpannableString;
 import android.text.SpannableStringBuilder;
 import android.text.TextUtils;
 import android.text.format.DateFormat;
-import android.text.style.ForegroundColorSpan;
 import android.text.style.ImageSpan;
 import android.text.style.TypefaceSpan;
 import android.transition.Fade;
@@ -45,7 +42,6 @@ import android.view.ViewOutlineProvider;
 import android.view.ViewTreeObserver;
 import android.view.WindowInsets;
 import android.widget.Button;
-import android.widget.EditText;
 import android.widget.FrameLayout;
 import android.widget.ImageButton;
 import android.widget.ImageView;
@@ -63,10 +59,9 @@ import org.joinmastodon.android.api.requests.accounts.GetAccountByID;
 import org.joinmastodon.android.api.requests.accounts.GetAccountFamiliarFollowers;
 import org.joinmastodon.android.api.requests.accounts.GetAccountRelationships;
 import org.joinmastodon.android.api.requests.accounts.GetAccountStatuses;
-import org.joinmastodon.android.api.requests.accounts.RemoveAccountFromFollowers;
+import org.joinmastodon.android.api.requests.accounts.GetOwnAccount;
 import org.joinmastodon.android.api.requests.accounts.SetAccountEndorsed;
 import org.joinmastodon.android.api.requests.accounts.SetAccountFollowed;
-import org.joinmastodon.android.api.requests.accounts.SetAccountPersonalNote;
 import org.joinmastodon.android.api.session.AccountSessionManager;
 import org.joinmastodon.android.events.SelfAccountUpdatedEvent;
 import org.joinmastodon.android.fragments.AccountSimpleTimelineFragment;
@@ -86,7 +81,6 @@ import org.joinmastodon.android.model.Attachment;
 import org.joinmastodon.android.model.FamiliarFollowers;
 import org.joinmastodon.android.model.Relationship;
 import org.joinmastodon.android.model.viewmodel.AccountViewModel;
-import org.joinmastodon.android.ui.M3AlertDialogBuilder;
 import org.joinmastodon.android.ui.OutlineProviders;
 import org.joinmastodon.android.ui.SimpleViewHolder;
 import org.joinmastodon.android.ui.SingleImagePhotoViewerListener;
@@ -101,7 +95,6 @@ import org.joinmastodon.android.ui.text.ImageSpanThatDoesNotBreakShitForNoGoodRe
 import org.joinmastodon.android.ui.utils.UiUtils;
 import org.joinmastodon.android.ui.views.CoverImageView;
 import org.joinmastodon.android.ui.views.CustomDrawingOrderLinearLayout;
-import org.joinmastodon.android.ui.views.FloatingHintEditTextLayout;
 import org.joinmastodon.android.ui.views.InlineBadgeLayout;
 import org.joinmastodon.android.ui.views.NestedRecyclerScrollView;
 import org.joinmastodon.android.ui.views.ProfileFieldsGridLayout;
@@ -459,7 +452,12 @@ public class ProfileFragment extends LoaderFragment implements ScrollableToTop, 
 
 	@Override
 	protected void doLoadData(){
-		currentRequest=new GetAccountByID(profileAccountID)
+		MastodonAPIRequest<Account> req;
+		if(AccountSessionManager.get(accountID).self.id.equals(profileAccountID))
+			req=new GetOwnAccount();
+		else
+			req=new GetAccountByID(profileAccountID);
+		currentRequest=req
 				.setCallback(new SimpleCallback<>(this){
 					@Override
 					public void onSuccess(Account result){
@@ -494,9 +492,6 @@ public class ProfileFragment extends LoaderFragment implements ScrollableToTop, 
 			return;
 		refreshing=true;
 		doLoadData();
-		if(isOwnProfile){
-			AccountSessionManager.get(accountID).updateAccountInfo();
-		}
 	}
 
 	@Override
@@ -511,6 +506,8 @@ public class ProfileFragment extends LoaderFragment implements ScrollableToTop, 
 		if(featuredFragment==null){
 			featuredFragment=new ProfileFeaturedFragment();
 			featuredFragment.setArguments(args);
+			if(relationship!=null)
+				featuredFragment.setRelationship(relationship);
 		}
 		if(timelineFragment==null){
 			timelineFragment=AccountTimelineFragment.newInstance(accountID, account, true);
@@ -795,6 +792,7 @@ public class ProfileFragment extends LoaderFragment implements ScrollableToTop, 
 				fieldsLayout.addView(fv);
 			}
 		}
+		syncScrollState();
 	}
 
 	private void updateHeaderBadges(){
@@ -831,13 +829,6 @@ public class ProfileFragment extends LoaderFragment implements ScrollableToTop, 
 		getToolbar().setTranslationZ(tabBarIsAtTop ? 0 : V.dp(3));
 	}
 
-	private CharSequence makeRedString(CharSequence s){
-		int color=UiUtils.getThemeColor(getActivity(), R.attr.colorM3Error);
-		SpannableString ss=new SpannableString(s);
-		ss.setSpan(new ForegroundColorSpan(color), 0, ss.length(), 0);
-		return ss;
-	}
-
 	@Override
 	public void onCreateOptionsMenu(Menu menu, MenuInflater inflater){
 		if(relationship==null && !isOwnProfile)
@@ -855,12 +846,12 @@ public class ProfileFragment extends LoaderFragment implements ScrollableToTop, 
 		if(isOwnProfile || relationship==null)
 			return;
 		if(relationship.followedBy)
-			menu.findItem(R.id.remove_follower).setTitle(makeRedString(getString(R.string.remove_follower)));
+			menu.findItem(R.id.remove_follower).setTitle(UiUtils.makeRedString(getActivity(), getString(R.string.remove_follower)));
 		else
 			menu.findItem(R.id.remove_follower).setVisible(false);
 		menu.findItem(R.id.mute).setTitle(getString(relationship.muting ? R.string.unmute_account : R.string.mute_account, account.getDisplayUsername()));
-		menu.findItem(R.id.block).setTitle(makeRedString(getString(relationship.blocking ? R.string.unblock_account : R.string.block_account)));
-		menu.findItem(R.id.report).setTitle(makeRedString(getString(R.string.report_account)));
+		menu.findItem(R.id.block).setTitle(UiUtils.makeRedString(getActivity(), relationship.blocking ? R.string.unblock_account : R.string.block_account));
+		menu.findItem(R.id.report).setTitle(UiUtils.makeRedString(getActivity(), R.string.report_account));
 		if(relationship.following){
 			MenuItem hideBoosts=menu.findItem(R.id.hide_boosts);
 			hideBoosts.setVisible(true);
@@ -873,7 +864,7 @@ public class ProfileFragment extends LoaderFragment implements ScrollableToTop, 
 			menu.findItem(R.id.feature).setVisible(false);
 		}
 		if(!account.isLocal())
-			menu.findItem(R.id.block_domain).setTitle(makeRedString(getString(relationship.domainBlocking ? R.string.unblock_domain : R.string.block_domain, account.getDomain())));
+			menu.findItem(R.id.block_domain).setTitle(UiUtils.makeRedString(getActivity(), relationship.domainBlocking ? R.string.unblock_domain : R.string.block_domain, account.getDomain()));
 		else
 			menu.findItem(R.id.block_domain).setVisible(false);
 		menu.findItem(R.id.add_to_list).setVisible(relationship.following);
@@ -951,76 +942,9 @@ public class ProfileFragment extends LoaderFragment implements ScrollableToTop, 
 			args.putString("account", accountID);
 			Nav.go(getActivity(), SettingsAccountFragment.class, args);
 		}else if(id==R.id.remove_follower){
-			AlertDialog alert=new M3AlertDialogBuilder(getActivity())
-					.setTitle(R.string.confirm_remove_follower_title)
-					.setMessage(getString(R.string.confirm_remove_follower, account.getDisplayUsername()))
-					.setPositiveButton(R.string.remove_follower, null)
-					.setNegativeButton(R.string.cancel, null)
-					.show();
-			Button okButton=alert.getButton(AlertDialog.BUTTON_POSITIVE);
-			okButton.setOnClickListener(v->{
-				UiUtils.showProgressForAlertButton(okButton, true);
-				new RemoveAccountFromFollowers(account.id)
-						.setCallback(new Callback<>(){
-							@Override
-							public void onSuccess(Relationship result){
-								updateRelationship(result);
-								UiUtils.showProgressForAlertButton(okButton, false);
-								alert.dismiss();
-							}
-
-							@Override
-							public void onError(ErrorResponse error){
-								if(getActivity()==null)
-									return;
-								error.showToast(getActivity());
-								UiUtils.showProgressForAlertButton(okButton, false);
-							}
-						})
-						.wrapProgress(getActivity(), R.string.loading, true)
-						.exec(accountID);
-			});
+			UiUtils.confirmAndRemoveFollower(getActivity(), accountID, account, this::updateRelationship);
 		}else if(id==R.id.personal_note){
-			AlertDialog.Builder bldr=new M3AlertDialogBuilder(getActivity())
-					.setHelpText(R.string.user_personal_note_explanation)
-					.setTitle(TextUtils.isEmpty(relationship.note) ? R.string.add_user_personal_note : R.string.edit_user_personal_note)
-					.setNegativeButton(R.string.cancel, null)
-					.setPositiveButton(R.string.save, null);
-
-			FloatingHintEditTextLayout editWrap=(FloatingHintEditTextLayout) bldr.getContext().getSystemService(LayoutInflater.class).inflate(R.layout.floating_hint_edit_text, null);
-			EditText edit=editWrap.findViewById(R.id.edit);
-			edit.setHint(R.string.user_personal_note);
-			edit.setSingleLine(false);
-			edit.setMaxLines(5);
-			edit.setMinLines(2);
-			edit.setGravity(Gravity.TOP | Gravity.START);
-			if(!TextUtils.isEmpty(relationship.note))
-				edit.setText(relationship.note);
-			editWrap.updateHint();
-			bldr.setView(editWrap);
-			AlertDialog alert=bldr.show();
-			Button saveButton=alert.getButton(AlertDialog.BUTTON_POSITIVE);
-			saveButton.setOnClickListener(v->{
-				UiUtils.showProgressForAlertButton(saveButton, true);
-				new SetAccountPersonalNote(account.id, edit.getText().toString())
-						.setCallback(new Callback<>(){
-							@Override
-							public void onSuccess(Relationship result){
-								updateRelationship(result);
-								UiUtils.showProgressForAlertButton(saveButton, false);
-								alert.dismiss();
-							}
-
-							@Override
-							public void onError(ErrorResponse error){
-								if(getActivity()==null)
-									return;
-								error.showToast(getActivity());
-								UiUtils.showProgressForAlertButton(saveButton, false);
-							}
-						})
-						.exec(accountID);
-			});
+			UiUtils.editAccountPersonalNote(getActivity(), accountID, account, relationship, this::updateRelationship);
 		}else if(id==R.id.feature){
 			new SetAccountEndorsed(account.id, !relationship.endorsed)
 					.setCallback(new Callback<>(){
@@ -1114,6 +1038,9 @@ public class ProfileFragment extends LoaderFragment implements ScrollableToTop, 
 		}else if(followsYouBadge!=null){
 			followsYouBadge.setVisibility(View.GONE);
 		}
+
+		if(featuredFragment!=null)
+			featuredFragment.setRelationship(relationship);
 	}
 
 	private void updateFamiliarFollowers(){
@@ -1281,7 +1208,7 @@ public class ProfileFragment extends LoaderFragment implements ScrollableToTop, 
 		UiUtils.confirmToggleBlockUser(getActivity(), accountID, account, relationship.blocking, this::updateRelationship);
 	}
 
-	private void updateRelationship(Relationship r){
+	public void updateRelationship(Relationship r){
 		relationship=r;
 		updateRelationship();
 	}

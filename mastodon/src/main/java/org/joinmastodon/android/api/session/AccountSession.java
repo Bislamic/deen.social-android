@@ -58,6 +58,7 @@ public class AccountSession{
 	public static final int FLAG_ACTIVATED=1;
 	public static final int FLAG_NEED_UPDATE_PUSH_SETTINGS=1 << 1;
 	public static final int FLAG_NEED_RE_REGISTER_PUSH=1 << 2;
+	public static final int FLAG_PUSH_FINAL_RFC=1 << 3;
 
 	@SerializedName(value="token", alternate="a")
 	public Token token;
@@ -92,6 +93,10 @@ public class AccountSession{
 	@SerializedName(value="preferences", alternate="p")
 	public Preferences preferences;
 	public boolean needReRegisterForPush;
+	public boolean pushEncryptionFinalRFC;
+	public String pushToken;
+	public int pushTokenVersion;
+	public long pushTokenLastRefresh;
 	private transient MastodonAPIController apiController;
 	private transient StatusInteractionController statusInteractionController;
 	private transient CacheController cacheController;
@@ -122,11 +127,17 @@ public class AccountSession{
 		activated=(flags & FLAG_ACTIVATED)==FLAG_ACTIVATED;
 		needUpdatePushSettings=(flags & FLAG_NEED_UPDATE_PUSH_SETTINGS)==FLAG_NEED_UPDATE_PUSH_SETTINGS;
 		needReRegisterForPush=(flags & FLAG_NEED_RE_REGISTER_PUSH)==FLAG_NEED_RE_REGISTER_PUSH;
+		pushEncryptionFinalRFC=(flags & FLAG_PUSH_FINAL_RFC)==FLAG_PUSH_FINAL_RFC;
 		JsonObject pushKeys=JsonParser.parseString(values.getAsString("push_keys")).getAsJsonObject();
 		if(!pushKeys.get("auth").isJsonNull() && !pushKeys.get("private").isJsonNull() && !pushKeys.get("public").isJsonNull()){
 			pushAuthKey=pushKeys.get("auth").getAsString();
 			pushPrivateKey=pushKeys.get("private").getAsString();
 			pushPublicKey=pushKeys.get("public").getAsString();
+			if(pushKeys.has("fcm_token")){
+				pushToken=pushKeys.get("fcm_token").getAsString();
+				pushTokenVersion=pushKeys.get("fcm_version").getAsInt();
+				pushTokenLastRefresh=pushKeys.get("fcm_last_refresh").getAsLong();
+			}
 		}
 		pushSubscription=MastodonAPIController.gson.fromJson(values.getAsString("push_subscription"), PushSubscription.class);
 		JsonObject legacyFilters=JsonParser.parseString(values.getAsString("legacy_filters")).getAsJsonObject();
@@ -149,6 +160,9 @@ public class AccountSession{
 				.add("auth", pushAuthKey)
 				.add("private", pushPrivateKey)
 				.add("public", pushPublicKey)
+				.add("fcm_token", pushToken)
+				.add("fcm_version", pushTokenVersion)
+				.add("fcm_last_refresh", pushTokenLastRefresh)
 				.build()
 				.toString());
 		values.put("push_subscription", MastodonAPIController.gson.toJson(pushSubscription));
@@ -170,6 +184,8 @@ public class AccountSession{
 			flags|=FLAG_NEED_UPDATE_PUSH_SETTINGS;
 		if(needReRegisterForPush)
 			flags|=FLAG_NEED_RE_REGISTER_PUSH;
+		if(pushEncryptionFinalRFC)
+			flags|=FLAG_PUSH_FINAL_RFC;
 		return flags;
 	}
 
@@ -393,5 +409,9 @@ public class AccountSession{
 		Instance instance=getInstanceInfo();
 		return instance==null || instance.configuration==null || instance.configuration.timelinesAccess==null
 				|| instance.configuration.timelinesAccess.liveFeeds==null || instance.configuration.timelinesAccess.liveFeeds.local!=Instance.TimelineAccessValue.DISABLED;
+	}
+
+	public boolean canSeeAdminNotifications(){
+		return self.role!=null && ((self.role.permissions & Role.PERMISSION_ADMINISTRATOR)!=0 || (self.role.permissions & Role.PERMISSION_MANAGE_USERS)!=0 || (self.role.permissions & Role.PERMISSION_MANAGE_REPORTS)!=0);
 	}
 }

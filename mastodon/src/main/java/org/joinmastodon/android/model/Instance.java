@@ -1,5 +1,7 @@
 package org.joinmastodon.android.model;
 
+import android.text.TextUtils;
+
 import com.google.gson.annotations.SerializedName;
 
 import org.joinmastodon.android.api.ObjectValidationException;
@@ -93,6 +95,16 @@ public abstract class Instance extends BaseModel{
 		return getApiVersion()>=8;
 	}
 
+	public String getVapidPublicKey(){
+		if(configuration!=null && configuration.vapid!=null && !TextUtils.isEmpty(configuration.vapid.publicKey))
+			return configuration.vapid.publicKey.replace("=", "");
+		return null;
+	}
+
+	public boolean supportsCollections(){
+		return getApiVersion()>=10;
+	}
+
 	@Parcel
 	public static class Rule{
 		public String id;
@@ -138,6 +150,7 @@ public abstract class Instance extends BaseModel{
 		public PollsConfiguration polls;
 		public URLsConfiguration urls;
 		public TimelineAccessConfiguration timelinesAccess;
+		public VapidConfiguration vapid;
 	}
 
 	@Parcel
@@ -185,6 +198,11 @@ public abstract class Instance extends BaseModel{
 	public static class TimelineAccessConfigurationItem{
 		public TimelineAccessValue local;
 		public TimelineAccessValue remote;
+	}
+
+	@Parcel
+	public static class VapidConfiguration{
+		public String publicKey;
 	}
 
 	public enum TimelineAccessValue{

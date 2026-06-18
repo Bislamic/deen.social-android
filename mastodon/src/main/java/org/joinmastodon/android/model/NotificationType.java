@@ -29,7 +29,15 @@ public enum NotificationType{
 	QUOTE,
 	@SerializedName("quoted_update")
 	QUOTED_UPDATE,
+	@SerializedName("admin.sign_up")
+	ADMIN_SIGNUP,
+	@SerializedName("admin.report")
+	ADMIN_REPORT,
 	FALLBACK,
+	@SerializedName("added_to_collection")
+	ADDED_TO_COLLECTION,
+	@SerializedName("collection_update")
+	COLLECTION_UPDATE,
 	;
 
 	public boolean canBeGrouped(){

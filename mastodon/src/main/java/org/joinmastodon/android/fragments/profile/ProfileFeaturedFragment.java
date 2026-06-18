@@ -1,49 +1,71 @@
 package org.joinmastodon.android.fragments.profile;
 
-import android.graphics.Canvas;
-import android.graphics.Paint;
 import android.os.Bundle;
 import android.view.View;
+import android.view.ViewGroup;
 import android.view.ViewStub;
+import android.view.WindowInsets;
 import android.widget.TextView;
 
 import org.joinmastodon.android.GlobalUserPreferences;
 import org.joinmastodon.android.R;
+import org.joinmastodon.android.api.MastodonAPIRequest;
 import org.joinmastodon.android.api.requests.BatchRequest;
 import org.joinmastodon.android.api.requests.accounts.GetAccountEndorsements;
+import org.joinmastodon.android.api.requests.accounts.GetAccountsByIDs;
+import org.joinmastodon.android.api.requests.collections.GetAccountCollections;
 import org.joinmastodon.android.api.session.AccountSessionManager;
-import org.joinmastodon.android.fragments.BaseStatusListFragment;
-import org.joinmastodon.android.fragments.HashtagFeaturedTimelineFragment;
-import org.joinmastodon.android.fragments.ThreadFragment;
+import org.joinmastodon.android.fragments.account_list.BaseAccountListFragment;
 import org.joinmastodon.android.fragments.account_list.FeaturedAccountListFragment;
 import org.joinmastodon.android.model.Account;
+import org.joinmastodon.android.model.AccountOrPartial;
 import org.joinmastodon.android.model.HeaderPaginationList;
-import org.joinmastodon.android.model.SearchResult;
-import org.joinmastodon.android.model.Status;
-import org.joinmastodon.android.ui.displayitems.AccountStatusDisplayItem;
-import org.joinmastodon.android.ui.displayitems.FooterStatusDisplayItem;
+import org.joinmastodon.android.model.Relationship;
+import org.joinmastodon.android.model.collections.AccountCollection;
+import org.joinmastodon.android.model.collections.AccountCollections;
+import org.joinmastodon.android.model.collections.CollectionItem;
+import org.joinmastodon.android.model.viewmodel.AccountViewModel;
+import org.joinmastodon.android.model.viewmodel.CollectionViewModel;
 import org.joinmastodon.android.ui.displayitems.SectionHeaderStatusDisplayItem;
 import org.joinmastodon.android.ui.displayitems.StatusDisplayItem;
 import org.joinmastodon.android.ui.text.HtmlParser;
 import org.joinmastodon.android.ui.utils.UiUtils;
+import org.joinmastodon.android.ui.viewholders.CollectionViewHolder;
 import org.parceler.Parcels;
 
-import java.util.ArrayList;
-import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
+import java.util.stream.Collectors;
 
+import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 import me.grishka.appkit.Nav;
+import me.grishka.appkit.api.APIRequest;
+import me.grishka.appkit.api.Callback;
+import me.grishka.appkit.api.ErrorResponse;
 import me.grishka.appkit.api.SimpleCallback;
+import me.grishka.appkit.imageloader.ImageLoaderRecyclerAdapter;
+import me.grishka.appkit.imageloader.requests.ImageLoaderRequest;
+import me.grishka.appkit.utils.MergeRecyclerAdapter;
 
-public class ProfileFeaturedFragment extends BaseStatusListFragment<SearchResult>{
+public class ProfileFeaturedFragment extends BaseAccountListFragment{
 	private Account profileAccount;
 	private boolean isSelf;
-	private boolean hasMoreFeaturedAccounts;
+	private SectionHeaderStatusDisplayItem accountsHeader, collectionsHeader;
+	private MergeRecyclerAdapter mergeAdapter;
+	private SectionHeaderAdapter accountsHeaderAdapter, collectionsHeaderAdapter;
+	private CollectionsAdapter collectionsAdapter;
+	private List<CollectionViewModel> collections=List.of();
+	private Relationship relationship;
+	private Map<String, Account> extraAccountsForCollections=new HashMap<>();
+	private APIRequest<?> collectionAccountsRequest;
 
 	public ProfileFeaturedFragment(){
-		setListLayoutId(R.layout.recycler_fragment_no_refresh);
+		setRefreshEnabled(false);
 	}
 
 	@Override
@@ -52,96 +74,76 @@ public class ProfileFeaturedFragment extends BaseStatusListFragment<SearchResult
 		profileAccount=Parcels.unwrap(getArguments().getParcelable("profileAccount"));
 		isSelf=AccountSessionManager.getInstance().isSelf(accountID, profileAccount);
 		setEmptyText(isSelf ? R.string.profile_featured_empty_self : R.string.profile_featured_empty);
-	}
 
-	@Override
-	protected List<StatusDisplayItem> buildDisplayItems(SearchResult s){
-		ArrayList<StatusDisplayItem> items=switch(s.type){
-			case ACCOUNT -> new ArrayList<>(Collections.singletonList(new AccountStatusDisplayItem(s.id, this, getActivity(), s.account, accountID)));
-			case HASHTAG, STATUS -> throw new IllegalStateException();
-		};
-
-		if(s.firstInSection){
-			items.add(0, new SectionHeaderStatusDisplayItem(this, getActivity(), getString(switch(s.type){
-				case ACCOUNT -> R.string.profile_endorsed_accounts;
-				case HASHTAG, STATUS -> throw new IllegalStateException();
-			}), getString(R.string.view_all), switch(s.type){
-				case ACCOUNT -> hasMoreFeaturedAccounts ? (Runnable)this::showAllEndorsedAccounts : null;
-				case HASHTAG, STATUS -> throw new IllegalStateException();
-			}));
-		}
-
-		return items;
-	}
-
-	@Override
-	protected void addAccountToKnown(SearchResult s){
-		Account acc=switch(s.type){
-			case ACCOUNT -> s.account;
-			case STATUS -> s.status.account;
-			case HASHTAG -> null;
-		};
-		if(acc!=null && !knownAccounts.containsKey(acc.id))
-			knownAccounts.put(acc.id, acc);
-	}
-
-	@Override
-	protected Status asStatus(SearchResult s){
-		return s.type==SearchResult.Type.STATUS ? s.status : null;
-	}
-
-	@Override
-	public void onItemClick(String id){
-		SearchResult res=getResultByID(id);
-		if(res==null)
-			return;
-		switch(res.type){
-			case ACCOUNT -> {
-				Bundle args=new Bundle();
-				args.putString("account", accountID);
-				args.putParcelable("profileAccount", Parcels.wrap(res.account));
-				Nav.go(getActivity(), ProfileFragment.class, args);
-			}
-			case HASHTAG -> {
-				Bundle args=new Bundle();
-				args.putParcelable("targetAccount", Parcels.wrap(profileAccount));
-				args.putParcelable("hashtag", Parcels.wrap(res.hashtag));
-				args.putString("account", accountID);
-				Nav.go(getActivity(), HashtagFeaturedTimelineFragment.class, args);
-			}
-			case STATUS -> {
-				Status status=res.status.getContentStatus();
-				Bundle args=new Bundle();
-				args.putString("account", accountID);
-				args.putParcelable("status", Parcels.wrap(status));
-				if(status.inReplyToAccountId!=null && knownAccounts.containsKey(status.inReplyToAccountId))
-					args.putParcelable("inReplyToAccount", Parcels.wrap(knownAccounts.get(status.inReplyToAccountId)));
-				Nav.go(getActivity(), ThreadFragment.class, args);
-			}
-		}
+		accountsHeader=new SectionHeaderStatusDisplayItem(StatusDisplayItem.NO_OP_CALLBACKS, getActivity(), getString(R.string.profile_endorsed_accounts), getString(R.string.view_all), null);
+		collectionsHeader=new SectionHeaderStatusDisplayItem(StatusDisplayItem.NO_OP_CALLBACKS, getActivity(), getString(R.string.profile_collections), getString(R.string.view_all), null);
+		extraAccountsForCollections.put(profileAccount.id, profileAccount);
 	}
 
 	@Override
 	protected void doLoadData(int offset, int count){
 		// Batch request because this will also load collections when those are ready
-		currentRequest=new BatchRequest(Map.of("accounts", new GetAccountEndorsements(profileAccount.id, 5, null)))
+		Map<String, MastodonAPIRequest<?>> requests=new HashMap<>();
+		requests.put("accounts", new GetAccountEndorsements(profileAccount.id, 5, null));
+		boolean supportsCollections=AccountSessionManager.get(accountID).getInstanceInfo().supportsCollections();
+		if(supportsCollections){
+			requests.put("collections", new GetAccountCollections(profileAccount.id, 0, 5));
+		}
+		currentRequest=new BatchRequest(requests)
 				.setCallback(new SimpleCallback<>(this){
+					@SuppressWarnings("unchecked")
 					@Override
 					public void onSuccess(Map<String, Object> result){
 						if(getActivity()==null)
 							return;
-						HeaderPaginationList<Account> accounts=(HeaderPaginationList<Account>) result.get("accounts");
-						ArrayList<SearchResult> results=new ArrayList<>();
-						for(int i=0;i<accounts.size();i++){
-							SearchResult res=new SearchResult(accounts.get(i));
-							res.firstInSection=(i==0);
-							results.add(res);
+						HeaderPaginationList<Account> accounts=Objects.requireNonNull((HeaderPaginationList<Account>) result.get("accounts"));
+						accountsHeader.onButtonClick=accounts.nextPageUri==null ? null : ProfileFeaturedFragment.this::showAllEndorsedAccounts;
+						accountsHeaderAdapter.setVisible(!accounts.isEmpty());
+
+						if(supportsCollections){
+							AccountCollections rawCollections=Objects.requireNonNull((AccountCollections) result.get("collections"));
+							if(refreshing){
+								extraAccountsForCollections.clear();
+								extraAccountsForCollections.put(profileAccount.id, profileAccount);
+							}
+							collections=CollectionViewModel.wrap(rawCollections, (Map<String, AccountOrPartial>)(Object) extraAccountsForCollections);
+							collectionsHeaderAdapter.setVisible(!rawCollections.collections.isEmpty());
+							HashSet<String> needAccounts=new HashSet<>();
+							for(AccountCollection c:rawCollections.collections){
+								needAccounts.add(c.accountId);
+								int i=0;
+								for(CollectionItem item:c.items){
+									needAccounts.add(item.accountId);
+									i++;
+									if(i==4)
+										break;
+								}
+							}
+							needAccounts.removeAll(extraAccountsForCollections.keySet());
+							if(!needAccounts.isEmpty())
+								loadAccountsForCollections(needAccounts);
+						}else{
+							collectionsHeaderAdapter.setVisible(false);
 						}
-						hasMoreFeaturedAccounts=accounts.nextPageUri!=null;
-						onDataLoaded(results, false);
+
+						onDataLoaded(accounts.stream().map(a->new AccountViewModel(a, accountID, false, getActivity())).collect(Collectors.toList()), false);
 					}
 				})
 				.exec(accountID);
+	}
+
+	@Override
+	protected RecyclerView.Adapter<?> getAdapter(){
+		mergeAdapter=new MergeRecyclerAdapter();
+		accountsHeaderAdapter=new SectionHeaderAdapter(accountsHeader);
+		collectionsHeaderAdapter=new SectionHeaderAdapter(collectionsHeader);
+
+		mergeAdapter.addAdapter(accountsHeaderAdapter);
+		mergeAdapter.addAdapter(super.getAdapter());
+		mergeAdapter.addAdapter(collectionsHeaderAdapter);
+		collectionsAdapter=new CollectionsAdapter();
+		mergeAdapter.addAdapter(collectionsAdapter);
+		return mergeAdapter;
 	}
 
 	@Override
@@ -149,31 +151,6 @@ public class ProfileFeaturedFragment extends BaseStatusListFragment<SearchResult
 		super.onShown();
 		if(!getArguments().getBoolean("noAutoLoad") && !loaded && !dataLoading)
 			loadData();
-	}
-
-	protected SearchResult getResultByID(String id){
-		for(SearchResult s:data){
-			if(s.id.equals(id)){
-				return s;
-			}
-		}
-		return null;
-	}
-
-	@Override
-	protected void onRelationshipsLoaded(){
-		for(int i=0;i<list.getChildCount();i++){
-			if(list.getChildViewHolder(list.getChildAt(i)) instanceof AccountStatusDisplayItem.Holder ah){
-				ah.realHolder.bindRelationship();
-			}
-		}
-	}
-
-	@Override
-	protected void drawDivider(View child, View bottomSibling, RecyclerView.ViewHolder holder, RecyclerView.ViewHolder siblingHolder, RecyclerView parent, Canvas c, Paint paint){
-		if(holder instanceof FooterStatusDisplayItem.Holder && siblingHolder instanceof StatusDisplayItem.Holder<?> sdi && sdi.getItemID().startsWith("post_")){
-			super.drawDivider(child, bottomSibling, holder, siblingHolder, parent, c, paint);
-		}
 	}
 
 	@Override
@@ -195,10 +172,149 @@ public class ProfileFeaturedFragment extends BaseStatusListFragment<SearchResult
 		}
 	}
 
+	@Override
+	public void onApplyWindowInsets(WindowInsets insets){
+		// no-op
+	}
+
+	@Override
+	protected void refresh(){
+		if(collectionAccountsRequest!=null){
+			collectionAccountsRequest.cancel();
+			collectionAccountsRequest=null;
+		}
+		super.refresh();
+	}
+
+	@Override
+	public void onViewCreated(View view, Bundle savedInstanceState){
+		super.onViewCreated(view, savedInstanceState);
+		list.getItemAnimator().setChangeDuration(0);
+	}
+
 	private void showAllEndorsedAccounts(){
 		Bundle args=new Bundle();
 		args.putString("account", accountID);
 		args.putParcelable("targetAccount", Parcels.wrap(profileAccount));
 		Nav.go(getActivity(), FeaturedAccountListFragment.class, args);
+	}
+
+	private void onBlockCollectionAuthorClick(String id){
+		UiUtils.confirmToggleBlockUser(getActivity(), accountID, profileAccount, relationship.blocking, rel->{
+			// TODO use the event bus for this
+			if(getParentFragment() instanceof ProfileFragment pf)
+				pf.updateRelationship(rel);
+		});
+	}
+
+	public void setRelationship(Relationship relationship){
+		this.relationship=relationship;
+	}
+
+	private void loadAccountsForCollections(Set<String> ids){
+		collectionAccountsRequest=new GetAccountsByIDs(ids)
+				.setCallback(new Callback<>(){
+					@Override
+					public void onSuccess(List<Account> result){
+						collectionAccountsRequest=null;
+						for(Account acc:result)
+							extraAccountsForCollections.put(acc.id, acc);
+						for(CollectionViewModel cvm:collections){
+							cvm.updateAccounts((Map<String, AccountOrPartial>)(Object) extraAccountsForCollections);
+						}
+						collectionsAdapter.notifyItemRangeChanged(0, collections.size());
+						imgLoader.forceUpdateImages();
+					}
+
+					@Override
+					public void onError(ErrorResponse error){
+						collectionAccountsRequest=null;
+					}
+				})
+				.exec(accountID);
+	}
+
+	private static class SectionHeaderAdapter extends RecyclerView.Adapter<SectionHeaderStatusDisplayItem.Holder>{
+		private boolean isVisible;
+		private final SectionHeaderStatusDisplayItem item;
+
+		private SectionHeaderAdapter(SectionHeaderStatusDisplayItem item){
+			this.item=item;
+		}
+
+		@NonNull
+		@Override
+		public SectionHeaderStatusDisplayItem.Holder onCreateViewHolder(@NonNull ViewGroup parent, int viewType){
+			return new SectionHeaderStatusDisplayItem.Holder(parent.getContext(), parent);
+		}
+
+		@Override
+		public void onBindViewHolder(@NonNull SectionHeaderStatusDisplayItem.Holder holder, int position){
+			holder.bind(item);
+		}
+
+		@Override
+		public int getItemCount(){
+			return isVisible ? 1 : 0;
+		}
+
+		@Override
+		public int getItemViewType(int position){
+			return 1;
+		}
+
+		public void setVisible(boolean visible){
+			if(visible==isVisible)
+				return;
+			isVisible=visible;
+			if(visible){
+				notifyItemInserted(0);
+			}else{
+				notifyItemRemoved(0);
+			}
+		}
+	}
+
+	private class CollectionsAdapter extends RecyclerView.Adapter<CollectionViewHolder> implements ImageLoaderRecyclerAdapter{
+		@NonNull
+		@Override
+		public CollectionViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType){
+			return new CollectionViewHolder(getActivity(), list, accountID, ProfileFeaturedFragment.this::onBlockCollectionAuthorClick, new CollectionViewHolder.AccountAndRelationshipProvider(){
+				@Override
+				public Account getAccount(String id){
+					return id.equals(profileAccount.id) ? profileAccount : null;
+				}
+
+				@Override
+				public Relationship getRelationship(String id){
+					return id.equals(profileAccount.id) ? relationship : null;
+				}
+			});
+		}
+
+		@Override
+		public void onBindViewHolder(@NonNull CollectionViewHolder holder, int position){
+			holder.bind(collections.get(position));
+		}
+
+		@Override
+		public int getItemCount(){
+			return collections.size();
+		}
+
+		@Override
+		public int getItemViewType(int position){
+			return 2;
+		}
+
+		@Override
+		public int getImageCountForItem(int position){
+			return collections.get(position).accounts.size();
+		}
+
+		@Override
+		public ImageLoaderRequest getImageRequest(int position, int image){
+			return collections.get(position).avatarRequests.get(image);
+		}
 	}
 }

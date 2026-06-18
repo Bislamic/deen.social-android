@@ -251,12 +251,12 @@
 	<string name="last_edit_at_x">Última edición %s</string>
 	<string name="time_just_now">xusto agora</string>
 	<plurals name="x_seconds_ago">
-		<item quantity="one">fai %d segundo</item>
-		<item quantity="other">fai %d segundos</item>
+		<item quantity="one">hai %d segundo</item>
+		<item quantity="other">hai %d segundos</item>
 	</plurals>
 	<plurals name="x_minutes_ago">
-		<item quantity="one">fai %d minuto</item>
-		<item quantity="other">fai %d minutos</item>
+		<item quantity="one">hai %d minuto</item>
+		<item quantity="other">hai %d minutos</item>
 	</plurals>
 	<string name="edited_timestamp">editado %s</string>
 	<string name="edit_original_post">Publicación orixinal</string>
@@ -398,7 +398,7 @@
 	<string name="settings_filters">Filtros</string>
 	<string name="settings_server_explanation">Vista xeral, regras, moderación</string>
 	<!-- %s is the app name (Mastodon, key app_name). I made it a placeholder so everything Just Works™ with forks -->
-	<string name="about_app">Acerca de %s</string>
+	<string name="about_app">Sobre %s</string>
 	<string name="default_post_language">Idioma de publicación</string>
 	<string name="settings_alt_text_reminders">Lembrar engadir Texto Alt</string>
 	<string name="settings_confirm_unfollow">Preguntar antes de deixar de seguir</string>
@@ -428,7 +428,7 @@
 	<string name="pause_notifications_banner">As notificacións volven %s.</string>
 	<string name="resume_notifications_now">Reactivar agora</string>
 	<string name="open_system_notification_settings">Ir aos axustes das notificacións</string>
-	<string name="about_server">Acerca de</string>
+	<string name="about_server">Sobre</string>
 	<string name="server_rules">Regras</string>
 	<string name="server_administrator">Administración</string>
 	<string name="send_email_to_server_admin">Mensaxe a Admin</string>
@@ -451,8 +451,8 @@
 		<item quantity="other">en %d horas</item>
 	</plurals>
 	<plurals name="x_hours_ago">
-		<item quantity="one">fai %d hora</item>
-		<item quantity="other">fai %d horas</item>
+		<item quantity="one">hai %d hora</item>
+		<item quantity="other">hai %d horas</item>
 	</plurals>
 	<string name="alt_text_reminder_title">O multimedia non ten Texto Alt</string>
 	<plurals name="alt_text_reminder_x_images">
@@ -531,16 +531,16 @@
 	<string name="posts_matching_string">Publicacións con “%s”</string>
 	<string name="accounts_matching_string">Persoas con “%s”</string>
 	<!-- Shown in the post header. Please keep it short -->
-	<string name="time_seconds_ago_short">fai %d seg.</string>
-	<string name="time_minutes_ago_short">fai %d min</string>
-	<string name="time_hours_ago_short">fai %d horas</string>
+	<string name="time_seconds_ago_short">hai %ds</string>
+	<string name="time_minutes_ago_short">hai %dm</string>
+	<string name="time_hours_ago_short">hai %dh</string>
 	<string name="time_days_ago_short">hai %d días</string>
 	<!-- %s is the name of the post language -->
 	<string name="translate_post">Traducir do %s</string>
 	<!-- %1$s is the language, %2$s is the name of the translation service -->
 	<string name="post_translated">Traducido do %1$s usando %2$s</string>
 	<string name="translation_show_original">Mostrar o orixinal</string>
-	<string name="translation_failed">Fallou a tradución. É posible que a administración non activase a tradución neste servidor ou que o servidor teña unha versión antiga de Mastodon que non ten soporte para a tradución.</string>
+	<string name="translation_failed">Fallou a tradución. É posible que a administración non activase a tradución para o servidor ou que o servidor estea executando unha versión antiga de Mastodon que non ten o software para a tradución.</string>
 	<string name="settings_privacy">Privacidade e alcance</string>
 	<string name="settings_discoverable">Perfil destacado e publicacións nos algoritmos de descubrimento</string>
 	<string name="settings_indexable">Incluír publicacións públicas nos resultados das buscas</string>
@@ -892,4 +892,100 @@ Canta máis xente sigas, máis activo e interesante será.</string>
 	<string name="quote_followers_only_cancel">Volver á edición</string>
 	<string name="quote_followers_only_dont_show_again">Non volver a mostrar esta mensaxe.</string>
 	<string name="more_replies_found">Existen máis respostas</string>
+	<string name="user_is_muted">Silenciada</string>
+	<string name="user_is_bot">Conta automatizada</string>
+	<string name="profile_view_qr_code">Ver código QR</string>
+	<string name="feature_user">Destacar no meu perfil</string>
+	<string name="add_user_personal_note">Engadir nota persoal</string>
+	<string name="mute_account">Silenciar conta</string>
+	<string name="block_account">Bloquear conta</string>
+	<string name="remove_follower">Quitar seguidora</string>
+	<string name="report_account">Denunciar conta</string>
+	<string name="unblock_account">Desbloquear conta</string>
+	<string name="unmute_account">Retirar silencio da conta</string>
+	<string name="unblock">Desbloquear</string>
+	<string name="request_to_follow">Solicitar seguir</string>
+	<string name="cancel_follow_request">Desbotar a petición</string>
+	<string name="confirm_remove_follower_title">Quitar seguidora?</string>
+	<string name="confirm_remove_follower">%s vai deixar de seguirte. É isto o que queres?</string>
+	<string name="edit_user_personal_note">Editar nota persoal</string>
+	<string name="user_personal_note_explanation">As notas persoais só as podes ver ti.</string>
+	<string name="user_personal_note">Nota persoal</string>
+	<string name="timeline_filter_posts_and_boosts">Publicacións e promocións</string>
+	<string name="timeline_filter_show_replies">Mostrar respostas</string>
+	<string name="timeline_filter_show_boosts">Mostrar promocións</string>
+	<string name="timeline_filter_all_activity">Toda actividade</string>
+	<string name="timeline_filter_posts_and_replies">Publicacións e respostas</string>
+	<string name="timeline_filter_posts">Publicacións</string>
+	<string name="edit_profile_display_name">Nome público</string>
+	<string name="edit_profile_x_custom_fields">Campos persoais (%d)</string>
+	<string name="edit_profile_custom_fields">Campos persoais</string>
+	<string name="edit_profile_custom_fields_description">Ex. pronomes, ligazons, etc.</string>
+	<string name="edit_profile_featured_hashtags_description">Permiten ás usuarias filtrar a túa cronoloxía por temas</string>
+	<string name="edit_profile_tab_settings">Axustes da pestana do perfil</string>
+	<string name="edit_profile_add_bio">Engadir biografía</string>
+	<string name="edit_profile_featured_hashtags">Cancelos destacados</string>
+	<string name="edit_profile_x_featured_hashtags">Cancelos destacados (%d)</string>
+	<string name="edit_profile_replace_image">Substituír</string>
+	<string name="edit_profile_edit_display_name">Editar o nome público</string>
+	<string name="edit_profile_edit_bio">Editar biografía</string>
+	<string name="add_profile_field">Engadir un campo</string>
+	<string name="edit_profile_custom_fields_help">Consello: dalle máis credibilidade á túa conta Mastodon validando a ligazón ás webs que posúas. <i>Saber máis</i></string>
+	<string name="edit_profile_link_verification_help_title">Engadindo unha ligazón verificada</string>
+	<string name="edit_profile_link_verification_help">Engade maior credibilidade ao teu perfil Mastodon verificando as ligazóns ás túas páxinas web persoais. Funciona así:</string>
+	<string name="edit_profile_link_verification_title1">Copia o código HTML inferior</string>
+	<string name="edit_profile_link_verification_title2">Pega o código na cabeceira HTML da túa web</string>
+	<string name="edit_profile_link_verification_text2">Ao engadir o código á cabeceira permites que o elemento &lt;a&gt; permaneza visible. O atributo rel=\"me\" evitar a suplantación de identidade en sitios web con contido creado polas usuarias ― por iso é importante mantelo.</string>
+	<string name="edit_profile_link_verification_title3">Engade a túa páxina web como un campo persoal</string>
+	<string name="edit_profile_link_verification_text3">Se xa engadiches a túa páxina a un dos campos persoais terás que eliminalo e volvelo a engadir para realizar a verificación.</string>
+	<string name="edit_profile_field">Edita o campo</string>
+	<string name="edit_profile_field_label_example">Ex. \"Páxina web persoal\"</string>
+	<string name="edit_profile_field_value_example">Ex. \"exemplo.gal\"</string>
+	<plurals name="x_chars_max">
+		<item quantity="one">%,d caracter como máximo</item>
+		<item quantity="other">%,d caracteres como máximo</item>
+	</plurals>
+	<plurals name="hashtag_used_in_x_posts">
+		<item quantity="one">Utilizado en %,d publicación</item>
+		<item quantity="other">Utilizado en %,d publicacións</item>
+	</plurals>
+	<string name="add_featured_hashtag">Engadir cancelo</string>
+	<string name="hashtag">Cancelo</string>
+	<string name="confirm_remove_featured_hashtag">Retirar cancelo?</string>
+	<string name="edit_profile_show_media_tab">Pestana «multimedia»</string>
+	<string name="edit_profile_show_media_tab_description">Mostra as túas publicacións que conteñen multimedia</string>
+	<string name="edit_profile_show_media_replies">Incluídas as respostas</string>
+	<string name="edit_profile_show_featured_tab">Pestana «destacado»</string>
+	<string name="edit_profile_show_featured_tab_description">Un espazo para mostrar outras contas</string>
+	<!-- %s is the current user's server domain -->
+	<string name="edit_profile_tabs_explanation">Estes axustes personalizan o que ven as usuarias en %s nas apps oficiais, pero non se aplica ás usuarias de outros servidores nin apps alleas.</string>
+	<string name="handle_explanation_title">Un alcume é o como o enderezo de correo.</string>
+	<string name="handle_explanation_username">%s é o nome de usuaria da conta no seu servidor. Alguén noutro servidor podería ter o mesmo nome de usuaria.</string>
+	<string name="handle_explanation_domain">%s é o servidor que aloxa o perfil e as publicacións da usuaria.</string>
+	<string name="handle_explanation_summary">Do mesmo xeito que podes enviar un correo electrónico a unha persoa que utiliza outro provedor, podes relacionarte con persoas doutros servidores Mastodon, e con calquera que use as outras apps do Fediverso.</string>
+	<string name="pinned_post">Fixadas</string>
+	<string name="view_all_pinned">Ver todas as publicacións fixadas</string>
+	<string name="profile_show_all_fields">Mostrar todos os campos</string>
+	<string name="unfeature_user">Non destacar no perfil</string>
+	<string name="confirm_delete_profile_field">Eliminar campo?</string>
+	<string name="confirm_delete_avatar">Eliminar foto do perfil?</string>
+	<string name="confirm_delete_cover">Eliminar imaxe da cabeceira?</string>
+	<string name="profile_followers">Seguidoras</string>
+	<string name="profile_following">Seguindo</string>
+	<string name="user_follows_you">Séguete</string>
+	<string name="profile_featured_empty_self">Axiña van chegar as Coleccións</string>
+	<string name="profile_featured_empty">Nada que ver por aquí</string>
+	<string name="profile_featured_empty_description">%s aínda non destacou nada.</string>
+	<string name="profile_featured_empty_self_description">As Coleccións (a partir de Mastodon 4.6) permiten crear as túas propias listas de recomendación para outras persoas usuarias.</string>
+	<string name="handle_explanation_copy">Copiar identificador</string>
+	<string name="request_to_follow_short">Solicitar</string>
+	<string name="cancel_follow_request_short">Desbotar</string>
+	<string name="notification_filter_admin">Notificacións de administración</string>
+	<string name="notification_filter_admin_reports">Denuncias para xestionar</string>
+	<string name="notification_filter_admin_signups">Novas contas</string>
+	<string name="notification_filter_admin_reports_explanation">Mostra denuncias de spam, violación das normas, ou outras queixas nesta instancia</string>
+	<string name="notification_filter_admin_signups_explanation">Mostra notificacións cando se crean novas contas nesta instancia</string>
+	<!-- Placeholders are user display names -->
+	<string name="notification_admin_report">%1$s denunciou a %2$s</string>
+	<string name="notification_admin_signup">%s creou a conta</string>
 </resources>

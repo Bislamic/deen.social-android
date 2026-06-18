@@ -17,6 +17,7 @@ import org.joinmastodon.android.api.requests.lists.GetLists;
 import org.joinmastodon.android.api.requests.notifications.GetNotificationsV1;
 import org.joinmastodon.android.api.requests.notifications.GetNotificationsV2;
 import org.joinmastodon.android.api.requests.timelines.GetHomeTimeline;
+import org.joinmastodon.android.api.session.AccountLocalPreferences;
 import org.joinmastodon.android.api.session.AccountSessionManager;
 import org.joinmastodon.android.model.Account;
 import org.joinmastodon.android.model.CacheablePaginatedResponse;
@@ -143,26 +144,6 @@ public class CacheController{
 		});
 	}
 
-	private List<NotificationViewModel> makeNotificationViewModels(List<NotificationGroup> notifications, Map<String, Account> accounts, Map<String, Status> statuses){
-		return notifications.stream()
-				.filter(ng->ng.type!=null)
-				.map(ng->{
-					NotificationViewModel nvm=new NotificationViewModel();
-					nvm.notification=ng;
-					nvm.accounts=ng.sampleAccountIds.stream().map(accounts::get).filter(Objects::nonNull).collect(Collectors.toList());
-					if(nvm.accounts.size()!=ng.sampleAccountIds.size())
-						return null;
-					if(ng.statusId!=null){
-						nvm.status=statuses.get(ng.statusId);
-						if(nvm.status==null)
-							return null;
-					}
-					return nvm;
-				})
-				.filter(Objects::nonNull)
-				.collect(Collectors.toList());
-	}
-
 	public void getNotifications(String maxID, int count, boolean onlyMentions, boolean forceReload, Callback<PaginatedResponse<List<NotificationViewModel>>> callback){
 		cancelDelayedClose();
 		databaseThread.postRunnable(()->{
@@ -211,7 +192,7 @@ public class CacheController{
 									}
 								}
 							}
-							uiHandler.post(()->callback.onSuccess(new PaginatedResponse<>(makeNotificationViewModels(result, accounts, statuses), _newMaxID)));
+							uiHandler.post(()->callback.onSuccess(new PaginatedResponse<>(NotificationViewModel.makeNotificationViewModels(result, accounts, statuses), _newMaxID)));
 							return;
 						}
 					}catch(IOException x){
@@ -228,13 +209,19 @@ public class CacheController{
 				if(!onlyMentions)
 					loadingNotifications=true;
 				if(AccountSessionManager.get(accountID).getInstanceInfo().getApiVersion()>=2){
-					new GetNotificationsV2(maxID, count, onlyMentions ? EnumSet.of(NotificationType.MENTION) : null, NotificationType.getGroupableTypes())
+					EnumSet<NotificationType> excludeTypes=EnumSet.noneOf(NotificationType.class);
+					AccountLocalPreferences lp=AccountSessionManager.get(accountID).getLocalPreferences();
+					if(!lp.adminReportsNotifications)
+						excludeTypes.add(NotificationType.ADMIN_REPORT);
+					if(!lp.adminSignupsNotifications)
+						excludeTypes.add(NotificationType.ADMIN_SIGNUP);
+					new GetNotificationsV2(maxID, count, onlyMentions ? EnumSet.of(NotificationType.MENTION) : null, NotificationType.getGroupableTypes(), excludeTypes)
 							.setCallback(new Callback<>(){
 								@Override
 								public void onSuccess(GetNotificationsV2.GroupedNotificationsResults result){
 									Map<String, Account> accounts=result.accounts.stream().collect(Collectors.toMap(a->a.id, Function.identity(), (a1, a2)->a2));
 									Map<String, Status> statuses=result.statuses.stream().collect(Collectors.toMap(s->s.id, Function.identity(), (s1, s2)->s2));
-									List<NotificationViewModel> notifications=makeNotificationViewModels(result.notificationGroups, accounts, statuses);
+									List<NotificationViewModel> notifications=NotificationViewModel.makeNotificationViewModels(result.notificationGroups, accounts, statuses);
 									databaseThread.postRunnable(()->putNotifications(result.notificationGroups, result.accounts, result.statuses, onlyMentions, maxID==null), 0);
 									PaginatedResponse<List<NotificationViewModel>> res=new PaginatedResponse<>(notifications,
 											result.notificationGroups.isEmpty() ? null : result.notificationGroups.get(result.notificationGroups.size()-1).pageMinId);
@@ -275,24 +262,7 @@ public class CacheController{
 									List<Status> statuses=filtered.stream().map(n->n.status).filter(Objects::nonNull).collect(Collectors.toList());
 									List<Account> accounts=filtered.stream().map(n->n.account).collect(Collectors.toList());
 									List<NotificationViewModel> converted=filtered.stream()
-											.map(n->{
-												NotificationGroup group=new NotificationGroup();
-												group.groupKey="converted-"+n.id;
-												group.notificationsCount=1;
-												group.type=n.type;
-												group.mostRecentNotificationId=group.pageMaxId=group.pageMinId=n.id;
-												group.latestPageNotificationAt=n.createdAt;
-												group.sampleAccountIds=List.of(n.account.id);
-												group.event=n.event;
-												group.moderationWarning=n.moderationWarning;
-												if(n.status!=null)
-													group.statusId=n.status.id;
-												NotificationViewModel nvm=new NotificationViewModel();
-												nvm.notification=group;
-												nvm.status=n.status;
-												nvm.accounts=List.of(n.account);
-												return nvm;
-											})
+											.map(NotificationViewModel::fromLegacyNotification)
 											.collect(Collectors.toList());
 									PaginatedResponse<List<NotificationViewModel>> res=new PaginatedResponse<>(converted, result.isEmpty() ? null : result.get(result.size()-1).id);
 									callback.onSuccess(res);

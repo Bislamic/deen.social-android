@@ -17,8 +17,8 @@ android {
 		applicationId "social.deen.android"
 		minSdk 23
 		targetSdk 35
-		versionCode 174
-		versionName "2.12.0"
+		versionCode 186
+		versionName "2.13.0"
 		testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
 		testBuildType "screenshotsUiTest"
 	}
@@ -104,7 +104,7 @@ dependencies {
 	implementation 'me.grishka.litex:viewpager:1.0.0'
 	implementation 'me.grishka.litex:viewpager2:1.0.0'
 	implementation 'me.grishka.litex:palette:1.0.0'
-	implementation 'me.grishka.appkit:appkit:1.5.1'
+	implementation 'me.grishka.appkit:appkit:1.5.3'
 	implementation 'com.google.code.gson:gson:2.8.9'
 	implementation 'org.jsoup:jsoup:1.14.3'
 	implementation 'com.squareup:otto:1.3.8'

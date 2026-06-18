@@ -11,10 +11,12 @@ import android.content.Context;
 import android.content.Intent;
 import android.graphics.drawable.Drawable;
 import android.graphics.drawable.Icon;
+import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.service.notification.StatusBarNotification;
 import android.text.TextUtils;
+import android.util.Base64;
 import android.util.Log;
 
 import org.joinmastodon.android.api.MastodonAPIController;
@@ -29,9 +31,13 @@ import org.joinmastodon.android.model.StatusPrivacy;
 import org.joinmastodon.android.ui.utils.UiUtils;
 import org.parceler.Parcels;
 
+import java.io.ByteArrayInputStream;
+import java.io.DataInputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 import me.grishka.appkit.api.Callback;
@@ -57,11 +63,17 @@ public class PushNotificationReceiver extends BroadcastReceiver{
 			}
 		}
 		if("com.google.android.c2dm.intent.RECEIVE".equals(intent.getAction())){
-			String k=intent.getStringExtra("k");
-			String p=intent.getStringExtra("p");
-			String s=intent.getStringExtra("s");
-			String pushAccountID=intent.getStringExtra("x");
-			if(!TextUtils.isEmpty(pushAccountID) && !TextUtils.isEmpty(k) && !TextUtils.isEmpty(p) && !TextUtils.isEmpty(s)){
+			String subtype=intent.getStringExtra("subtype");
+			if(subtype==null || !subtype.startsWith("wp:")){
+				Log.w(TAG, "Subtype doesn't start with 'wp:'");
+				return;
+			}
+			String pushAccountID=Uri.parse(subtype.substring(3)).getFragment();
+			byte[] rawData=intent.getByteArrayExtra("rawData");
+			boolean isRFC=!intent.hasExtra("crypto-key") && !intent.hasExtra("encryption");
+			String encryptionParam=intent.getStringExtra("encryption");
+			String cryptoKeyParam=intent.getStringExtra("crypto-key");
+			if(!TextUtils.isEmpty(pushAccountID) && rawData!=null && (isRFC || !TextUtils.isEmpty(encryptionParam)) && (isRFC || !TextUtils.isEmpty(cryptoKeyParam))){
 				MastodonAPIController.runInBackground(()->{
 					try{
 						List<AccountSession> accounts=AccountSessionManager.getInstance().getLoggedInAccounts();
@@ -81,7 +93,43 @@ public class PushNotificationReceiver extends BroadcastReceiver{
 							return;
 						}
 						String accountID=account.getID();
-						PushNotification pn=AccountSessionManager.getInstance().getAccount(accountID).getPushSubscriptionManager().decryptNotification(k, p, s);
+						if(isRFC!=AccountSessionManager.get(accountID).pushEncryptionFinalRFC){
+							Log.i(TAG, "onReceive: isRFC mismatch between client and server");
+							return;
+						}
+						byte[] decodedServerKey, decodedPayload, decodedSalt;
+						if(isRFC){
+							if(rawData.length<22){
+								Log.i("TAG", "onReceive: payload is too short");
+								return;
+							}
+							DataInputStream in=new DataInputStream(new ByteArrayInputStream(rawData));
+							decodedSalt=new byte[16];
+							in.readFully(decodedSalt);
+							int rs=in.readInt();
+							int idLen=in.read();
+							decodedServerKey=new byte[idLen];
+							in.readFully(decodedServerKey);
+							decodedPayload=new byte[in.available()];
+							in.readFully(decodedPayload);
+						}else{
+							Map<String, String> encryptionParams=parseKeyValueThing(encryptionParam);
+							Map<String, String> cryptoKeyParams=parseKeyValueThing(cryptoKeyParam);
+							String serverKey=cryptoKeyParams.get("dh");
+							String salt=encryptionParams.get("salt");
+							if(TextUtils.isEmpty(serverKey) || TextUtils.isEmpty(salt)){
+								Log.i(TAG, "onReceive: server key or salt is invalid");
+								return;
+							}
+							decodedServerKey=Base64.decode(serverKey, Base64.URL_SAFE);
+							decodedPayload=rawData;
+							decodedSalt=Base64.decode(salt, Base64.URL_SAFE);
+						}
+						PushNotification pn=AccountSessionManager.getInstance().getAccount(accountID).getPushSubscriptionManager().decryptNotification(decodedServerKey, decodedPayload, decodedSalt);
+						if(pn==null){
+							Log.i(TAG, "onReceive: failed to decrypt payload");
+							return;
+						}
 						new GetNotificationByID(pn.notificationId)
 								.setCallback(new Callback<>(){
 									@Override
@@ -103,6 +151,18 @@ public class PushNotificationReceiver extends BroadcastReceiver{
 				Log.w(TAG, "onReceive: invalid push notification format");
 			}
 		}
+	}
+
+	private Map<String, String> parseKeyValueThing(String thing){
+		HashMap<String, String> res=new HashMap<>();
+		for(String part:thing.split(";")){
+			part=part.trim();
+			if(!part.contains("="))
+				continue;
+			String[] kv=part.split("=", 2);
+			res.put(kv[0], kv[1]);
+		}
+		return res;
 	}
 
 	private void notify(Context context, PushNotification pn, String accountID, org.joinmastodon.android.model.Notification notification){
