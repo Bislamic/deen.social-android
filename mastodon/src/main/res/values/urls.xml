@@ -1,6 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-	<string name="github_url" translatable="false">https://github.com/mastodon/mastodon-android</string>
+	<!-- Bislamic: points contributors at the deen.social-android fork, where
+	     app-specific issues/PRs belong (core-Mastodon changes go upstream — see CONTRIBUTING.md). -->
+	<string name="github_url" translatable="false">https://github.com/Bislamic/deen.social-android</string>
 	<!-- Bislamic: privacy policy hosted on the deen.social instance. -->
 	<string name="privacy_policy_url" translatable="false">https://deen.social/privacy-policy</string>
 </resources>
