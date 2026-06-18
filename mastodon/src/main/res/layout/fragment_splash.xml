@@ -131,90 +131,35 @@
 
 		</FrameLayout>
 
-		<!-- Bislamic: deen.social is single-instance. The "Pick another server"
-		     button is hidden (gone): the picker bypass routes it to deen.social
-		     anyway, so it duplicates "Join deen.social" with a misleading label.
-		     Kept in the layout (gone, not deleted) so SplashFragment's onButtonClick
-		     reference to R.id.btn_get_started still resolves. -->
+		<!-- Bislamic: single-instance welcome. Two clear primary actions —
+		     "Join deen.social" (create account, the ProgressBarButton above) and
+		     "Log in" (below) — plus a Learn more link. The upstream
+		     "Pick another server" button and the "sign up or log in" divider were
+		     removed entirely: deen.social is the only instance, so a server-choice
+		     affordance has no meaning here. -->
 		<Button
-			android:id="@+id/btn_get_started"
+			android:id="@+id/btn_log_in"
 			android:layout_width="match_parent"
 			android:layout_height="wrap_content"
 			android:layout_marginLeft="16dp"
 			android:layout_marginRight="16dp"
-			android:layout_marginTop="8dp"
+			android:layout_marginTop="12dp"
 			android:textColor="#FFF"
-			android:visibility="gone"
 			style="@style/Widget.Mastodon.M3.Button.Outlined"
 			android:background="@drawable/bg_button_m3_outlined_white"
-			android:text="@string/pick_server"/>
+			android:text="@string/log_in"/>
 
-
-		<LinearLayout
-			android:layout_width="match_parent"
+		<Button
+			android:id="@+id/btn_learn_more"
+			android:layout_width="wrap_content"
 			android:layout_height="wrap_content"
-			android:layout_marginLeft="16dp"
-			android:layout_marginRight="16dp"
-			android:layout_marginTop="8dp"
-			android:orientation="horizontal">
-
-			<View
-				android:layout_width="0dp"
-				android:layout_height="1dp"
-				android:layout_weight="1"
-				android:layout_gravity="center_vertical"
-				android:background="#B2FFFFFF"/>
-
-			<TextView
-				android:layout_width="wrap_content"
-				android:layout_height="20dp"
-				android:layout_marginLeft="8dp"
-				android:layout_marginRight="8dp"
-				android:textAllCaps="true"
-				android:textAppearance="@style/m3_label_large"
-				android:textColor="#B2FFFFFF"
-				android:layout_gravity="center_vertical"
-				android:text="@string/signup_or_login"/>
-
-			<View
-				android:layout_width="0dp"
-				android:layout_height="1dp"
-				android:layout_weight="1"
-				android:layout_gravity="center_vertical"
-				android:background="#B2FFFFFF"/>
-
-		</LinearLayout>
-
-		<LinearLayout
-			android:layout_width="match_parent"
-			android:layout_height="wrap_content"
-			android:orientation="horizontal"
-			android:layout_marginLeft="8dp"
-			android:layout_marginRight="8dp">
-
-			<Button
-				android:id="@+id/btn_learn_more"
-				android:layout_width="0dp"
-				android:layout_height="wrap_content"
-				android:layout_margin="8dp"
-				android:layout_weight="1"
-				android:textColor="#FFF"
-				style="@style/Widget.Mastodon.M3.Button.Text"
-				android:background="@drawable/bg_button_m3_text_white"
-				android:text="@string/learn_more"/>
-
-			<Button
-				android:id="@+id/btn_log_in"
-				android:layout_width="0dp"
-				android:layout_height="wrap_content"
-				android:layout_margin="8dp"
-				android:layout_weight="1"
-				android:textColor="#FFF"
-				style="@style/Widget.Mastodon.M3.Button.Text"
-				android:background="@drawable/bg_button_m3_text_white"
-				android:text="@string/log_in"/>
-
-		</LinearLayout>
+			android:layout_gravity="center_horizontal"
+			android:layout_marginTop="4dp"
+			android:layout_marginBottom="4dp"
+			android:textColor="#FFF"
+			style="@style/Widget.Mastodon.M3.Button.Text"
+			android:background="@drawable/bg_button_m3_text_white"
+			android:text="@string/learn_more"/>
 
 	</LinearLayout>
 

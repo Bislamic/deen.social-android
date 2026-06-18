@@ -74,8 +74,10 @@ public class SplashFragment extends AppKitFragment{
 	@Override
 	public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, Bundle savedInstanceState){
 		contentView=(SizeListenerFrameLayout) inflater.inflate(R.layout.fragment_splash, container, false);
-		contentView.findViewById(R.id.btn_get_started).setOnClickListener(this::onButtonClick);
-		contentView.findViewById(R.id.btn_log_in).setOnClickListener(this::onButtonClick);
+		// Bislamic: single-instance welcome. "Join deen.social" (btn_join_default_server)
+		// creates an account; "Log in" (btn_log_in) starts the OAuth login. The upstream
+		// "Pick another server" button (btn_get_started) was removed from the layout.
+		contentView.findViewById(R.id.btn_log_in).setOnClickListener(this::onLogInClick);
 		defaultServerButton=contentView.findViewById(R.id.btn_join_default_server);
 		defaultServerButton.setText(getString(R.string.join_default_server, chosenDefaultServer));
 		defaultServerButton.setOnClickListener(this::onJoinDefaultServerClick);
@@ -123,15 +125,11 @@ public class SplashFragment extends AppKitFragment{
 		return contentView;
 	}
 
-	private void onButtonClick(View v){
-		// Bislamic: instance picker is removed. Both buttons route directly
-		// to the deen.social signup or login flow.
-		boolean isSignup=v.getId()==R.id.btn_get_started;
-		if(isSignup){
-			proceedWithServerDomain(DEFAULT_SERVER);
-		}else{
-			proceedWithLogin(DEFAULT_SERVER);
-		}
+	// Bislamic: "Log in" starts the deen.social OAuth flow directly. Account
+	// creation is handled separately by "Join deen.social" (btn_join_default_server
+	// -> onJoinDefaultServerClick). The upstream instance picker is gone.
+	private void onLogInClick(View v){
+		proceedWithLogin(DEFAULT_SERVER);
 	}
 
 	private void onJoinDefaultServerClick(View v){
