@@ -131,6 +131,11 @@
 
 		</FrameLayout>
 
+		<!-- Bislamic: deen.social is single-instance. The "Pick another server"
+		     button is hidden (gone): the picker bypass routes it to deen.social
+		     anyway, so it duplicates "Join deen.social" with a misleading label.
+		     Kept in the layout (gone, not deleted) so SplashFragment's onButtonClick
+		     reference to R.id.btn_get_started still resolves. -->
 		<Button
 			android:id="@+id/btn_get_started"
 			android:layout_width="match_parent"
@@ -139,6 +144,7 @@
 			android:layout_marginRight="16dp"
 			android:layout_marginTop="8dp"
 			android:textColor="#FFF"
+			android:visibility="gone"
 			style="@style/Widget.Mastodon.M3.Button.Outlined"
 			android:background="@drawable/bg_button_m3_outlined_white"
 			android:text="@string/pick_server"/>
