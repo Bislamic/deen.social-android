@@ -1,6 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-	<color name="primary_700">#431cbb</color>
+	<!-- Bislamic: legacy primary_700 token rebranded to deep Brand Blue
+	     (#0055B3) so older Mastodon UI surfaces match the M3 Cielo/blue primary. -->
+	<color name="primary_700">#0055B3</color>
 
 	<color name="navigation_bar_bg_light">#282C37</color>
 	<color name="highlight_over_dark">#30FFFFFF</color>

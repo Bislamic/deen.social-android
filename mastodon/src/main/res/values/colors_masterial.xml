@@ -1,14 +1,18 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 	<!-- light -->
-	<color name="masterialLight_primary">#4000DD</color>
+	<!-- Bislamic: deen.social "blue-led" brand palette (Brand System §08).
+	     Brand Blue #0065D9 primary, Azure #2F82E2 secondary, Sky Tint #E9F4FF
+	     containers. Replaces upstream Mastodon purple. onPrimary/onSecondary
+	     stay white (WCAG AA on these blues); container fg uses deep navy. -->
+	<color name="masterialLight_primary">#0065D9</color>
 	<color name="masterialLight_onPrimary">#FFFFFF</color>
-	<color name="masterialLight_primaryContainer">#EBDDFF</color>
-	<color name="masterialLight_onPrimaryContainer">#230F46</color>
-	<color name="masterialLight_secondary">#5D51AF</color>
+	<color name="masterialLight_primaryContainer">#E9F4FF</color>
+	<color name="masterialLight_onPrimaryContainer">#001D3D</color>
+	<color name="masterialLight_secondary">#2F82E2</color>
 	<color name="masterialLight_onSecondary">#FFFFFF</color>
-	<color name="masterialLight_secondaryContainer">#B0A5FF</color>
-	<color name="masterialLight_onSecondaryContainer">#220C73</color>
+	<color name="masterialLight_secondaryContainer">#D6E8FB</color>
+	<color name="masterialLight_onSecondaryContainer">#0A2A4D</color>
 	<color name="masterialLight_tertiary">#810082</color>
 	<color name="masterialLight_onTertiary">#FFFFFF</color>
 	<color name="masterialLight_tertiaryContainer">#B722B7</color>
@@ -168,14 +172,16 @@
 	<color name="masterialLight_colorOnLimeContainer_highContrast">#FFFFFF</color>
 
 	<!-- dark -->
-	<color name="masterialDark_primary">#C7BFFF</color>
-	<color name="masterialDark_onPrimary">#2B009E</color>
-	<color name="masterialDark_primaryContainer">#4D1AF4</color>
-	<color name="masterialDark_onPrimaryContainer">#FAF5FF</color>
-	<color name="masterialDark_secondary">#C7BFFF</color>
-	<color name="masterialDark_onSecondary">#2E1E7E</color>
-	<color name="masterialDark_secondaryContainer">#3D308E</color>
-	<color name="masterialDark_onSecondaryContainer">#D6CFFF</color>
+	<!-- Bislamic: blue-led brand in dark mode. Sky #7BB0EB reads as the brand
+	     on dark surfaces; onPrimary is deep navy so it stays legible. -->
+	<color name="masterialDark_primary">#7BB0EB</color>
+	<color name="masterialDark_onPrimary">#00284D</color>
+	<color name="masterialDark_primaryContainer">#0055B3</color>
+	<color name="masterialDark_onPrimaryContainer">#E9F4FF</color>
+	<color name="masterialDark_secondary">#A6CCF5</color>
+	<color name="masterialDark_onSecondary">#0A2A4D</color>
+	<color name="masterialDark_secondaryContainer">#134A7A</color>
+	<color name="masterialDark_onSecondaryContainer">#D6E8FB</color>
 	<color name="masterialDark_tertiary">#FFAAF5</color>
 	<color name="masterialDark_onTertiary">#5B005C</color>
 	<color name="masterialDark_tertiaryContainer">#970099</color>
