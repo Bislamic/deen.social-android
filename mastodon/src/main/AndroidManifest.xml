@@ -48,6 +48,15 @@
 			android:name="com.google.mlkit.vision.DEPENDENCIES"
 			android:value="barcode_ui"/>
 
+		<!-- Bislamic: disable Sentry's auto-init ContentProvider. The SDK
+		     otherwise runs SentryInitProvider before MastodonApp.onCreate(),
+		     finds no DSN in the manifest, and crashes the app on launch with
+		     "DSN is required". We initialise Sentry manually (DSN-aware,
+		     opt-out) in BislamicCrashReporting.initialize() instead. -->
+		<meta-data
+			android:name="io.sentry.auto-init"
+			android:value="false"/>
+
 		<activity android:name=".MainActivity" android:exported="true" android:configChanges="orientation|screenSize" android:windowSoftInputMode="adjustResize" android:launchMode="singleTask">
 			<intent-filter>
 				<action android:name="android.intent.action.MAIN"/>
