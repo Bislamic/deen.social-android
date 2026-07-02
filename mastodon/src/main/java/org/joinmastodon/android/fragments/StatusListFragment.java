@@ -12,8 +12,6 @@ import org.joinmastodon.android.events.StatusCreatedEvent;
 import org.joinmastodon.android.events.StatusDeletedEvent;
 import org.joinmastodon.android.events.StatusUpdatedEvent;
 import org.joinmastodon.android.model.Status;
-import org.joinmastodon.android.model.collections.AccountCollection;
-import org.joinmastodon.android.model.collections.CollectionItem;
 import org.joinmastodon.android.ui.displayitems.CollectionStatusDisplayItem;
 import org.joinmastodon.android.ui.displayitems.ExtendedFooterStatusDisplayItem;
 import org.joinmastodon.android.ui.displayitems.FooterStatusDisplayItem;
@@ -39,6 +37,10 @@ public abstract class StatusListFragment extends BaseStatusListFragment<Status>{
 	protected void addAccountToKnown(Status s){
 		if(!knownAccounts.containsKey(s.account.id))
 			knownAccounts.put(s.account.id, s.account);
+		if(s.reblog!=null && !knownAccounts.containsKey(s.reblog.account.id))
+			knownAccounts.put(s.reblog.account.id, s.reblog.account);
+		if(s.quote!=null && s.quote.quotedStatus!=null && !knownAccounts.containsKey(s.quote.quotedStatus.account.id))
+			knownAccounts.put(s.quote.quotedStatus.account.id, s.quote.quotedStatus.account);
 	}
 
 	@Override
@@ -78,16 +80,7 @@ public abstract class StatusListFragment extends BaseStatusListFragment<Status>{
 	protected Set<String> extractExtraAccountIDs(List<Status> items){
 		HashSet<String> ids=new HashSet<>();
 		for(Status s:items){
-			if(s.taggedCollections!=null && !s.taggedCollections.isEmpty()){
-				int i=0;
-				AccountCollection collection=s.taggedCollections.get(0);
-				for(CollectionItem item:collection.items){
-					if(!knownAccounts.containsKey(item.accountId))
-						ids.add(item.accountId);
-					if(++i==4)
-						break;
-				}
-			}
+			extractCollectionAccountsFromStatus(ids, s.getContentStatus());
 		}
 		return ids;
 	}
@@ -104,7 +97,8 @@ public abstract class StatusListFragment extends BaseStatusListFragment<Status>{
 				}
 			}
 		}
-		imgLoader.updateImages();
+		if(imgLoader!=null)
+			imgLoader.updateImages();
 	}
 
 	protected void onStatusCreated(Status status){}
